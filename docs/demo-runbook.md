@@ -2,13 +2,13 @@
 
 ## Pre-Demo Setup (complete before timer starts)
 
-1. Set `GEMINI_API_KEY` in `.env.local` (only required key).
+1. Set `GEMINI_API_KEY` in `.env.local` (required), and `NVIDIA_NIM_API_KEY` optionally as backup.
 2. In terminal: `npm run dev`
 3. Open app at `http://localhost:3000`
 4. Keep `data/test-addresses.csv` open for copy/paste
 5. Prepare two addresses:
    - FL-Coastal-04 (`1100 S Ocean Dr, Miami Beach, FL 33139`)
-   - CA-Wildfire-02 (`15300 Skyway, Magalia, CA 95954`)
+   - CA-Wildfire-02 (`1411 Clark Rd, Paradise, CA 95969`)
 
 Data sources in demo mode are free/public: OSM Nominatim, FEMA OpenFEMA, NOAA/NWS alerts.
 

@@ -1,0 +1,771 @@
+{
+  "generatedAt": "2026-03-02T10:13:22.004Z",
+  "nimBaseUrl": "https://integrate.api.nvidia.com/v1",
+  "availableModelCount": 185,
+  "selectedModels": [
+    "meta/llama-3.1-405b-instruct",
+    "meta/llama-3.3-70b-instruct",
+    "nvidia/llama-3.1-nemotron-70b-instruct",
+    "deepseek-ai/deepseek-r1-distill-llama-8b",
+    "mistralai/mistral-large",
+    "mistralai/mixtral-8x22b-instruct-v0.1",
+    "meta/llama-3.1-70b-instruct",
+    "qwen/qwen2.5-coder-32b-instruct",
+    "google/gemma-2-27b-it",
+    "meta/llama-3.1-8b-instruct"
+  ],
+  "requestTimeoutMs": 15000,
+  "prompts": [
+    {
+      "id": "json_instruction_following",
+      "description": "Strict JSON schema compliance"
+    },
+    {
+      "id": "concise_risk_advisory_quality",
+      "description": "Concise risk advisory writing quality"
+    },
+    {
+      "id": "simple_reasoning_consistency",
+      "description": "Simple arithmetic reasoning consistency"
+    }
+  ],
+  "scoringWeights": {
+    "successRate": 0.3,
+    "parseabilityCompliance": 0.25,
+    "simpleTaskCorrectness": 0.3,
+    "latency": 0.15
+  },
+  "minLatencyMs": 97.97,
+  "maxLatencyMs": 2515.95,
+  "ranking": [
+    {
+      "rank": 1,
+      "model": "meta/llama-3.3-70b-instruct",
+      "overallWeightedScore": 94.41
+    },
+    {
+      "rank": 2,
+      "model": "qwen/qwen2.5-coder-32b-instruct",
+      "overallWeightedScore": 93.48
+    },
+    {
+      "rank": 3,
+      "model": "meta/llama-3.1-70b-instruct",
+      "overallWeightedScore": 79.64
+    },
+    {
+      "rank": 4,
+      "model": "meta/llama-3.1-8b-instruct",
+      "overallWeightedScore": 79.61
+    },
+    {
+      "rank": 5,
+      "model": "mistralai/mixtral-8x22b-instruct-v0.1",
+      "overallWeightedScore": 77.67
+    },
+    {
+      "rank": 6,
+      "model": "deepseek-ai/deepseek-r1-distill-llama-8b",
+      "overallWeightedScore": 35.95
+    },
+    {
+      "rank": 7,
+      "model": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "overallWeightedScore": 15
+    },
+    {
+      "rank": 8,
+      "model": "mistralai/mistral-large",
+      "overallWeightedScore": 14.91
+    },
+    {
+      "rank": 9,
+      "model": "meta/llama-3.1-405b-instruct",
+      "overallWeightedScore": 14.76
+    },
+    {
+      "rank": 10,
+      "model": "google/gemma-2-27b-it",
+      "overallWeightedScore": 13.86
+    }
+  ],
+  "recommendedModelId": "meta/llama-3.3-70b-instruct",
+  "modelRuns": [
+    {
+      "model": "meta/llama-3.1-405b-instruct",
+      "metrics": {
+        "successRatePct": 0,
+        "meanLatencyMs": 136.48,
+        "parseabilityComplianceScore": 0,
+        "simpleTaskCorrectnessScore": 0,
+        "latencyScore": 98.41,
+        "overallWeightedScore": 14.76
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": false,
+          "status": 404,
+          "latencyMs": 236.07,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function id '7c79b6d5-3552-41e7-8574-c4d431548d8e' version 'null': Specified function in account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg' is not found\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function id '7c79b6d5-3552-41e7-8574-c4d431548d8e' version 'null': Specified function in account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg' is not found\"}"
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": false,
+          "status": 404,
+          "latencyMs": 87.74,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function id '7c79b6d5-3552-41e7-8574-c4d431548d8e' version 'null': Specified function in account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg' is not found\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function id '7c79b6d5-3552-41e7-8574-c4d431548d8e' version 'null': Specified function in account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg' is not found\"}"
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": false,
+          "status": 404,
+          "latencyMs": 85.63,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function id '7c79b6d5-3552-41e7-8574-c4d431548d8e' version 'null': Specified function in account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg' is not found\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function id '7c79b6d5-3552-41e7-8574-c4d431548d8e' version 'null': Specified function in account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg' is not found\"}"
+          }
+        }
+      ]
+    },
+    {
+      "model": "meta/llama-3.3-70b-instruct",
+      "metrics": {
+        "successRatePct": 100,
+        "meanLatencyMs": 616.09,
+        "parseabilityComplianceScore": 90.48,
+        "simpleTaskCorrectnessScore": 100,
+        "latencyScore": 78.57,
+        "overallWeightedScore": 94.41
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": true,
+          "status": 200,
+          "latencyMs": 643.82,
+          "error": null,
+          "outputText": "{\"location\":\"Austin, TX\",\"hazards\":[\"flood\",\"heat\",\"wildfire\"],\"risk_score\":67,\"confidence\":0.84,\"actions\":[\"Evacuate\",\"Shelter\"]}",
+          "complianceScore": 100,
+          "correctnessScore": 100,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "locationOk": true,
+            "hazardsOk": true,
+            "riskOk": true,
+            "confidenceOk": true,
+            "actionsOk": true
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": true,
+          "status": 200,
+          "latencyMs": 701.87,
+          "error": null,
+          "outputText": "Houston homeowners, consider basement-apartment risks. \n- Ensure flood insurance coverage is adequate.\n- Install a reliable sump pump to prevent water damage.\n- Identify a safe evacuation route in case of emergency.",
+          "complianceScore": 71.43,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "exactThreeBullets": false,
+            "withinWordRange": false,
+            "wordCount": 32,
+            "hasFloodInsurance": true,
+            "hasSumpPump": true,
+            "hasEvacuationRoute": true,
+            "noDisclaimer": true,
+            "calmTone": true
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": true,
+          "status": 200,
+          "latencyMs": 502.59,
+          "error": null,
+          "outputText": "{\"after_two_hours\": 12, \"threshold_triggered\": true, \"explanation\": \"Linear increase\"}",
+          "complianceScore": 100,
+          "correctnessScore": 100,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "afterTwoHoursIsNumber": true,
+            "thresholdIsBoolean": true,
+            "explanationOk": true,
+            "numericAnswerOk": true,
+            "thresholdAnswerOk": true
+          }
+        }
+      ]
+    },
+    {
+      "model": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "metrics": {
+        "successRatePct": 0,
+        "meanLatencyMs": 97.97,
+        "parseabilityComplianceScore": 0,
+        "simpleTaskCorrectnessScore": 0,
+        "latencyScore": 100,
+        "overallWeightedScore": 15
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": false,
+          "status": 404,
+          "latencyMs": 99.53,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '9b96341b-9791-4db9-a00d-4e43aa192a39': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '9b96341b-9791-4db9-a00d-4e43aa192a39': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}"
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": false,
+          "status": 404,
+          "latencyMs": 92.66,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '9b96341b-9791-4db9-a00d-4e43aa192a39': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '9b96341b-9791-4db9-a00d-4e43aa192a39': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}"
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": false,
+          "status": 404,
+          "latencyMs": 101.72,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '9b96341b-9791-4db9-a00d-4e43aa192a39': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '9b96341b-9791-4db9-a00d-4e43aa192a39': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}"
+          }
+        }
+      ]
+    },
+    {
+      "model": "deepseek-ai/deepseek-r1-distill-llama-8b",
+      "metrics": {
+        "successRatePct": 100,
+        "meanLatencyMs": 2515.95,
+        "parseabilityComplianceScore": 23.81,
+        "simpleTaskCorrectnessScore": 0,
+        "latencyScore": 0,
+        "overallWeightedScore": 35.95
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": true,
+          "status": 200,
+          "latencyMs": 2437.64,
+          "error": null,
+          "outputText": "<think>\nOkay, so I need to create a JSON object based on the user's query. Let me break down the requirements step by step.\n\nFirst, the location is specified as \"Austin, TX\". That's straightforward. I just need to make sure it's exactly that string.\n\nNext, the hazards are listed as [\"flood\",\"heat\",\"wildfire\"], and they must be in that exact order. I should double-check that I'm including all three and in the right sequence.\n\nThe risk_score is given as 67. I'll make sure to include that as an integer in the JSON.\n\nConfidence is 0.84, so I'll represent that as a floating-point number.\n\nFor actions, the user wants exactly two short imperative strings. I need to think of two clear, concise actions that address the hazards. Maybe something like \"Monitor weather conditions\" and \"Prepare emergency supplies",
+          "complianceScore": 0,
+          "correctnessScore": 0,
+          "evaluationDetails": {
+            "strictJson": false,
+            "parseableJson": false,
+            "exactKeys": false,
+            "locationOk": false,
+            "hazardsOk": false,
+            "riskOk": false,
+            "confidenceOk": false,
+            "actionsOk": false
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": true,
+          "status": 200,
+          "latencyMs": 2902.63,
+          "error": null,
+          "outputText": "<think>\nOkay, so the user wants me to write a basement-apartment risk advisory for Houston, TX. Let me break down the requirements first. They need it to be between 70 to 90 words, exactly three bullet points, each starting with a hyphen. Also, I must include \"flood insurance,\" \"sump pump,\" and \"evacuation route.\" The tone should be calm and practical, and no disclaimers.\n\nHmm, Houston is known for its heavy rainfall and flooding, so flood risk is a big concern. Basement apartments are often lower to the ground, making them more vulnerable. I should mention flood insurance as the first point because it's crucial for protecting against potential damage.\n\nNext, a sump pump is essential. It helps remove water that accumulates in the basement. Maybe I should explain its importance, like preventing water damage and mold growth. That makes sense.\n\nLastly, an evacuation route is important in case of an emergency. I should advise residents to know the nearest exits and practice the route regularly. It's a practical tip that adds safety.\n\n",
+          "complianceScore": 71.43,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "exactThreeBullets": false,
+            "withinWordRange": false,
+            "wordCount": 172,
+            "hasFloodInsurance": true,
+            "hasSumpPump": true,
+            "hasEvacuationRoute": true,
+            "noDisclaimer": true,
+            "calmTone": true
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": true,
+          "status": 200,
+          "latencyMs": 2207.57,
+          "error": null,
+          "outputText": "<think>\nOkay, so I have this problem about a basement water sensor. The sensor reports water levels at hourly intervals, and the levels are [2, 4, 6, 8] cm. The first part asks me to predict the level after two more hours, assuming the increase stays linear. The second part is about a threshold alert at 11 cm, and I need to determine if it will trigger within the next two hours.\n\nAlright, let's start with the first question. I need to find the water level after two more hours. The data given is [2, 4, 6, 8], which I assume is the level at each hour. So, the first hour is 2 cm, the second is 4 cm, third is 6 cm",
+          "complianceScore": 0,
+          "correctnessScore": 0,
+          "evaluationDetails": {
+            "strictJson": false,
+            "parseableJson": false,
+            "exactKeys": false,
+            "afterTwoHoursIsNumber": false,
+            "thresholdIsBoolean": false,
+            "explanationOk": false,
+            "numericAnswerOk": false,
+            "thresholdAnswerOk": false
+          }
+        }
+      ]
+    },
+    {
+      "model": "mistralai/mistral-large",
+      "metrics": {
+        "successRatePct": 0,
+        "meanLatencyMs": 112.8,
+        "parseabilityComplianceScore": 0,
+        "simpleTaskCorrectnessScore": 0,
+        "latencyScore": 99.39,
+        "overallWeightedScore": 14.91
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": false,
+          "status": 404,
+          "latencyMs": 143.58,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '767b5b9a-3f9d-4c1d-86e8-fa861988cee7': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '767b5b9a-3f9d-4c1d-86e8-fa861988cee7': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}"
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": false,
+          "status": 404,
+          "latencyMs": 91.93,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '767b5b9a-3f9d-4c1d-86e8-fa861988cee7': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '767b5b9a-3f9d-4c1d-86e8-fa861988cee7': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}"
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": false,
+          "status": 404,
+          "latencyMs": 102.89,
+          "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '767b5b9a-3f9d-4c1d-86e8-fa861988cee7': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 404: {\"status\":404,\"title\":\"Not Found\",\"detail\":\"Function '767b5b9a-3f9d-4c1d-86e8-fa861988cee7': Not found for account 'PCEPnOZ1cqaUjqujyU2ul4087ej4eBkVcd3IksddXRg'\"}"
+          }
+        }
+      ]
+    },
+    {
+      "model": "mistralai/mixtral-8x22b-instruct-v0.1",
+      "metrics": {
+        "successRatePct": 100,
+        "meanLatencyMs": 895.77,
+        "parseabilityComplianceScore": 90.48,
+        "simpleTaskCorrectnessScore": 50,
+        "latencyScore": 67.01,
+        "overallWeightedScore": 77.67
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": true,
+          "status": 200,
+          "latencyMs": 807.84,
+          "error": null,
+          "outputText": " {\"location\":\"Austin, TX\",\"hazards\":[\"flood\",\"heat\",\"wildfire\"],\"risk_score\":67,\"confidence\":0.84,\"actions\":[\"Stay hydrated\",\"Monitor fire risk\"]}",
+          "complianceScore": 100,
+          "correctnessScore": 100,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "locationOk": true,
+            "hazardsOk": true,
+            "riskOk": true,
+            "confidenceOk": true,
+            "actionsOk": true
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": true,
+          "status": 200,
+          "latencyMs": 1180.27,
+          "error": null,
+          "outputText": " Considering a basement apartment in Houston, TX? Be aware of potential risks.\n\n- Houston's proximity to the Gulf Coast increases flood risk. Ensure your property has a reliable sump pump and consider flood insurance for added protection.\n- Regularly inspect and maintain your sump pump to prevent unexpected basement flooding.\n- Familiarize yourself with local evacuation routes in case of severe weather events or flooding. Stay safe and informed.",
+          "complianceScore": 71.43,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "exactThreeBullets": false,
+            "withinWordRange": false,
+            "wordCount": 69,
+            "hasFloodInsurance": true,
+            "hasSumpPump": true,
+            "hasEvacuationRoute": true,
+            "noDisclaimer": true,
+            "calmTone": true
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": true,
+          "status": 200,
+          "latencyMs": 699.19,
+          "error": null,
+          "outputText": " {\n  \"after_two_hours\": 10,\n  \"threshold_triggered\": false,\n  \"explanation\": \"Linear increase predicts 10 cm after two hours.\"\n}",
+          "complianceScore": 100,
+          "correctnessScore": 0,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "afterTwoHoursIsNumber": true,
+            "thresholdIsBoolean": true,
+            "explanationOk": true,
+            "numericAnswerOk": false,
+            "thresholdAnswerOk": false
+          }
+        }
+      ]
+    },
+    {
+      "model": "meta/llama-3.1-70b-instruct",
+      "metrics": {
+        "successRatePct": 100,
+        "meanLatencyMs": 770.63,
+        "parseabilityComplianceScore": 95.24,
+        "simpleTaskCorrectnessScore": 50,
+        "latencyScore": 72.18,
+        "overallWeightedScore": 79.64
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": true,
+          "status": 200,
+          "latencyMs": 625.14,
+          "error": null,
+          "outputText": "{\"location\":\"Austin, TX\",\"hazards\":[\"flood\",\"heat\",\"wildfire\"],\"risk_score\":67,\"confidence\":0.84,\"actions\":[\"Evacuate immediately\",\"Stay hydrated\"]}",
+          "complianceScore": 100,
+          "correctnessScore": 100,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "locationOk": true,
+            "hazardsOk": true,
+            "riskOk": true,
+            "confidenceOk": true,
+            "actionsOk": true
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": true,
+          "status": 200,
+          "latencyMs": 1165.95,
+          "error": null,
+          "outputText": "Living in a basement apartment in Houston, TX, comes with unique risks. To ensure your safety, consider the following:\n\n- Invest in flood insurance to protect against potential water damage from heavy rainfall and storm surges.\n- Regularly inspect and maintain your sump pump to prevent water accumulation and minimize damage.\n- Familiarize yourself with the evacuation route in case of an emergency, as basement apartments can be prone to flooding and limited escape options.",
+          "complianceScore": 85.71,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "exactThreeBullets": false,
+            "withinWordRange": true,
+            "wordCount": 75,
+            "hasFloodInsurance": true,
+            "hasSumpPump": true,
+            "hasEvacuationRoute": true,
+            "noDisclaimer": true,
+            "calmTone": true
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": true,
+          "status": 200,
+          "latencyMs": 520.81,
+          "error": null,
+          "outputText": "{\"after_two_hours\": 10, \"threshold_triggered\": false, \"explanation\": \"Linear increase, no trigger within 2 hours\"}",
+          "complianceScore": 100,
+          "correctnessScore": 0,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "afterTwoHoursIsNumber": true,
+            "thresholdIsBoolean": true,
+            "explanationOk": true,
+            "numericAnswerOk": false,
+            "thresholdAnswerOk": false
+          }
+        }
+      ]
+    },
+    {
+      "model": "qwen/qwen2.5-coder-32b-instruct",
+      "metrics": {
+        "successRatePct": 100,
+        "meanLatencyMs": 956.97,
+        "parseabilityComplianceScore": 95.24,
+        "simpleTaskCorrectnessScore": 100,
+        "latencyScore": 64.47,
+        "overallWeightedScore": 93.48
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": true,
+          "status": 200,
+          "latencyMs": 869.06,
+          "error": null,
+          "outputText": "{\"location\":\"Austin, TX\",\"hazards\":[\"flood\",\"heat\",\"wildfire\"],\"risk_score\":67,\"confidence\":0.84,\"actions\":[\"evacuate if necessary\",\"stay hydrated\"]}",
+          "complianceScore": 100,
+          "correctnessScore": 100,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "locationOk": true,
+            "hazardsOk": true,
+            "riskOk": true,
+            "confidenceOk": true,
+            "actionsOk": true
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": true,
+          "status": 200,
+          "latencyMs": 1125.19,
+          "error": null,
+          "outputText": "- Consider purchasing flood insurance to protect against potential water damage, especially in Houston's flood-prone areas.\n- Install a reliable sump pump with a backup battery to handle heavy rainfall and prevent basement flooding.\n- Establish a clear evacuation route and keep emergency supplies ready in case of sudden flooding or other emergencies.",
+          "complianceScore": 85.71,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "exactThreeBullets": true,
+            "withinWordRange": false,
+            "wordCount": 53,
+            "hasFloodInsurance": true,
+            "hasSumpPump": true,
+            "hasEvacuationRoute": true,
+            "noDisclaimer": true,
+            "calmTone": true
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": true,
+          "status": 200,
+          "latencyMs": 876.66,
+          "error": null,
+          "outputText": "{\"after_two_hours\": 12, \"threshold_triggered\": true, \"explanation\": \"Increases by 2 cm/hour; 12 cm after 2 hours exceeds 11 cm threshold.\"}",
+          "complianceScore": 100,
+          "correctnessScore": 100,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "afterTwoHoursIsNumber": true,
+            "thresholdIsBoolean": true,
+            "explanationOk": true,
+            "numericAnswerOk": true,
+            "thresholdAnswerOk": true
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemma-2-27b-it",
+      "metrics": {
+        "successRatePct": 0,
+        "meanLatencyMs": 282.54,
+        "parseabilityComplianceScore": 0,
+        "simpleTaskCorrectnessScore": 0,
+        "latencyScore": 92.37,
+        "overallWeightedScore": 13.86
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": false,
+          "status": 400,
+          "latencyMs": 322.51,
+          "error": "HTTP 400: System role not supported System role not supported",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 400: System role not supported System role not supported"
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": false,
+          "status": 400,
+          "latencyMs": 226.55,
+          "error": "HTTP 400: System role not supported System role not supported",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 400: System role not supported System role not supported"
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": false,
+          "status": 400,
+          "latencyMs": 298.56,
+          "error": "HTTP 400: System role not supported System role not supported",
+          "outputText": "",
+          "complianceScore": 0,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "error": "HTTP 400: System role not supported System role not supported"
+          }
+        }
+      ]
+    },
+    {
+      "model": "meta/llama-3.1-8b-instruct",
+      "metrics": {
+        "successRatePct": 100,
+        "meanLatencyMs": 583.49,
+        "parseabilityComplianceScore": 90.48,
+        "simpleTaskCorrectnessScore": 50,
+        "latencyScore": 79.92,
+        "overallWeightedScore": 79.61
+      },
+      "promptRuns": [
+        {
+          "promptId": "json_instruction_following",
+          "description": "Strict JSON schema compliance",
+          "success": true,
+          "status": 200,
+          "latencyMs": 529.74,
+          "error": null,
+          "outputText": "{\"location\":\"Austin, TX\",\"hazards\":[\"flood\",\"heat\",\"wildfire\"],\"risk_score\":67,\"confidence\":0.84,\"actions\":[\"Evacuate\",\"Stay Informed\"]}",
+          "complianceScore": 100,
+          "correctnessScore": 100,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "locationOk": true,
+            "hazardsOk": true,
+            "riskOk": true,
+            "confidenceOk": true,
+            "actionsOk": true
+          }
+        },
+        {
+          "promptId": "concise_risk_advisory_quality",
+          "description": "Concise risk advisory writing quality",
+          "success": true,
+          "status": 200,
+          "latencyMs": 694.31,
+          "error": null,
+          "outputText": "Living in a basement apartment in Houston, TX, comes with unique risks. Be prepared for potential flooding by:\n\n- Investing in flood insurance to protect your financial well-being.\n- Regularly inspecting and maintaining your sump pump to prevent water accumulation.\n- Knowing your evacuation route and emergency contact numbers in case of a flood warning.",
+          "complianceScore": 71.43,
+          "correctnessScore": null,
+          "evaluationDetails": {
+            "exactThreeBullets": false,
+            "withinWordRange": false,
+            "wordCount": 55,
+            "hasFloodInsurance": true,
+            "hasSumpPump": true,
+            "hasEvacuationRoute": true,
+            "noDisclaimer": true,
+            "calmTone": true
+          }
+        },
+        {
+          "promptId": "simple_reasoning_consistency",
+          "description": "Simple arithmetic reasoning consistency",
+          "success": true,
+          "status": 200,
+          "latencyMs": 526.42,
+          "error": null,
+          "outputText": "{\"after_two_hours\": 14, \"threshold_triggered\": false, \"explanation\": \"Linear increase from 2 to 8 cm in 4 hours, 1.5 cm/hour.\"}",
+          "complianceScore": 100,
+          "correctnessScore": 0,
+          "evaluationDetails": {
+            "strictJson": true,
+            "parseableJson": true,
+            "exactKeys": true,
+            "afterTwoHoursIsNumber": true,
+            "thresholdIsBoolean": true,
+            "explanationOk": true,
+            "numericAnswerOk": false,
+            "thresholdAnswerOk": false
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -17,7 +17,9 @@ It gives homeowners and renters a plain-language **5-year climate risk outlook**
   - Flood
   - Wildfire
   - Severe weather
-- AI advisory generation powered by Gemini.
+- AI advisory generation:
+  - Primary: Gemini
+  - Backup (optional): NVIDIA NIM
 - Assistance program links (federal + selected state resources).
 - Data-source transparency (`live`, `fallback`, `unavailable`).
 - Validation package with 15 high-risk U.S. addresses.
@@ -51,9 +53,17 @@ Set this in `.env.local`:
 
 ```bash
 GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.0-flash
+
+# Optional backup if Gemini is unavailable
+NVIDIA_NIM_API_KEY=
+NVIDIA_NIM_BASE_URL=https://integrate.api.nvidia.com/v1
+NVIDIA_NIM_MODEL=meta/llama-3.3-70b-instruct
 ```
 
 `GEMINI_API_KEY` is the only required key. Data retrieval uses free public sources.
+`NVIDIA_NIM_API_KEY` is optional and used only as advisory fallback.
+Default fallback model is `meta/llama-3.3-70b-instruct` based on the benchmark in `docs/nim-model-benchmark.md`.
 
 ## API
 
@@ -109,7 +119,7 @@ npm run build
 Recommended: Vercel
 
 1. Import this repo into Vercel.
-2. Add `GEMINI_API_KEY` in project settings.
+2. Add `GEMINI_API_KEY` (and optionally `NVIDIA_NIM_API_KEY`) in project settings.
 3. Deploy.
 
 ## Notes
