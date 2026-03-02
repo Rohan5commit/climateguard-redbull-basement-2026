@@ -114,6 +114,27 @@ npm run lint
 npm run build
 ```
 
+## Stress testing
+
+Run long load tests against a running app instance:
+
+```bash
+npm run stress
+```
+
+Run failover-only load test (Gemini disabled, NIM expected):
+
+```bash
+npm run stress:failover
+```
+
+Latest reports are saved to:
+
+- `data/stress-test-results.json`
+- `docs/stress-test-report.md`
+- `data/failover-stress-results.json`
+- `docs/failover-stress-report.md`
+
 ## Deploy
 
 Recommended: Vercel

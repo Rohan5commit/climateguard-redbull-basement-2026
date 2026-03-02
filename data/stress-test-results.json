@@ -1,0 +1,172 @@
+{
+  "generatedAt": "2026-03-02T11:35:00.214Z",
+  "baseUrl": "http://localhost:3000",
+  "scenarios": [
+    {
+      "scenario": {
+        "id": "warmup",
+        "description": "Warmup and initial correctness scan",
+        "requests": 80,
+        "concurrency": 4,
+        "timeoutMs": 30000
+      },
+      "durationMs": 29706.57,
+      "requests": 80,
+      "successes": 80,
+      "successRate": 100,
+      "schemaValidCount": 80,
+      "schemaValidRate": 100,
+      "throughputRps": 2.69,
+      "latencyMs": {
+        "min": 1.65,
+        "avg": 1482.31,
+        "p50": 5.39,
+        "p90": 4685.04,
+        "p95": 5513.18,
+        "p99": 14227.82,
+        "max": 16765.4
+      },
+      "statusCounts": {
+        "200": 80
+      },
+      "advisorySourceCounts": {
+        "NVIDIA NIM Advisory": 80
+      },
+      "riskLevelCounts": {
+        "Low": 71,
+        "Moderate": 9
+      },
+      "topErrors": [],
+      "topSchemaIssues": []
+    },
+    {
+      "scenario": {
+        "id": "load-medium",
+        "description": "Medium sustained concurrent load",
+        "requests": 500,
+        "concurrency": 10,
+        "timeoutMs": 30000
+      },
+      "durationMs": 555.09,
+      "requests": 500,
+      "successes": 500,
+      "successRate": 100,
+      "schemaValidCount": 500,
+      "schemaValidRate": 100,
+      "throughputRps": 900.75,
+      "latencyMs": {
+        "min": 3.31,
+        "avg": 10.84,
+        "p50": 9.2,
+        "p90": 18.46,
+        "p95": 21.15,
+        "p99": 27.08,
+        "max": 37.97
+      },
+      "statusCounts": {
+        "200": 500
+      },
+      "advisorySourceCounts": {
+        "NVIDIA NIM Advisory": 500
+      },
+      "riskLevelCounts": {
+        "Low": 466,
+        "Moderate": 34
+      },
+      "topErrors": [],
+      "topSchemaIssues": []
+    },
+    {
+      "scenario": {
+        "id": "load-high",
+        "description": "High load burst",
+        "requests": 1200,
+        "concurrency": 25,
+        "timeoutMs": 35000
+      },
+      "durationMs": 859.2,
+      "requests": 1200,
+      "successes": 1200,
+      "successRate": 100,
+      "schemaValidCount": 1200,
+      "schemaValidRate": 100,
+      "throughputRps": 1396.65,
+      "latencyMs": {
+        "min": 3.64,
+        "avg": 17.63,
+        "p50": 15.78,
+        "p90": 23.86,
+        "p95": 30.85,
+        "p99": 56.55,
+        "max": 178.58
+      },
+      "statusCounts": {
+        "200": 1200
+      },
+      "advisorySourceCounts": {
+        "NVIDIA NIM Advisory": 1200
+      },
+      "riskLevelCounts": {
+        "Low": 1119,
+        "Moderate": 81
+      },
+      "topErrors": [],
+      "topSchemaIssues": []
+    },
+    {
+      "scenario": {
+        "id": "soak-12m",
+        "description": "Long soak run for stability under continuous pressure",
+        "durationSec": 720,
+        "concurrency": 12,
+        "timeoutMs": 35000
+      },
+      "durationMs": 720107.48,
+      "requests": 1370939,
+      "successes": 1370939,
+      "successRate": 100,
+      "schemaValidCount": 1370939,
+      "schemaValidRate": 100,
+      "throughputRps": 1903.8,
+      "latencyMs": {
+        "min": 0.24,
+        "avg": 6.25,
+        "p50": 4.25,
+        "p90": 10.15,
+        "p95": 13.31,
+        "p99": 26.28,
+        "max": 6161.46
+      },
+      "statusCounts": {
+        "200": 1370939
+      },
+      "advisorySourceCounts": {
+        "NVIDIA NIM Advisory": 1370939
+      },
+      "riskLevelCounts": {
+        "Low": 1279266,
+        "Moderate": 91673
+      },
+      "topErrors": [],
+      "topSchemaIssues": []
+    }
+  ],
+  "aggregate": {
+    "requests": 1372719,
+    "successes": 1372719,
+    "successRate": 100,
+    "schemaValidCount": 1372719,
+    "schemaValidRate": 100,
+    "durationSec": 751.23,
+    "throughputRps": 1827.3,
+    "latency": {
+      "min": 0.24,
+      "avg": 6.35,
+      "p50": 4.25,
+      "p90": 10.18,
+      "p95": 13.4,
+      "p99": 26.38,
+      "max": 16765.4
+    }
+  }
+}

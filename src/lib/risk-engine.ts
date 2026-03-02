@@ -110,6 +110,171 @@ interface AdvisoryResult {
   source: DataSourceStatus;
 }
 
+interface CacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+
+interface FetchWithRetryOptions extends RequestInit {
+  timeoutMs?: number;
+  retries?: number;
+  baseBackoffMs?: number;
+}
+
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+const DEFAULT_FETCH_TIMEOUT_MS = 8_000;
+const DEFAULT_FETCH_RETRIES = 2;
+const DEFAULT_FETCH_BACKOFF_MS = 180;
+
+const GEOCODE_CACHE_TTL_MS = 30 * 60 * 1000;
+const FEMA_CACHE_TTL_MS = 30 * 60 * 1000;
+const NOAA_CACHE_TTL_MS = 5 * 60 * 1000;
+const ADVISORY_CACHE_TTL_MS = 10 * 60 * 1000;
+
+const geocodeCache = new Map<string, CacheEntry<SourceResult<GeocodedLocation>>>();
+const femaCache = new Map<string, CacheEntry<SourceResult<FemaSignals>>>();
+const noaaCache = new Map<string, CacheEntry<SourceResult<WeatherSignals>>>();
+const advisoryCache = new Map<string, CacheEntry<AdvisoryResult>>();
+
+const geocodeInFlight = new Map<string, Promise<SourceResult<GeocodedLocation>>>();
+const femaInFlight = new Map<string, Promise<SourceResult<FemaSignals>>>();
+const noaaInFlight = new Map<string, Promise<SourceResult<WeatherSignals>>>();
+const advisoryInFlight = new Map<string, Promise<AdvisoryResult>>();
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function getCachedValue<T>(cache: Map<string, CacheEntry<T>>, key: string): T | undefined {
+  const cached = cache.get(key);
+
+  if (!cached) {
+    return undefined;
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    cache.delete(key);
+    return undefined;
+  }
+
+  return cached.value;
+}
+
+async function withTtlCache<T>(
+  cache: Map<string, CacheEntry<T>>,
+  inFlight: Map<string, Promise<T>>,
+  key: string,
+  ttlMs: number,
+  loader: () => Promise<T>,
+): Promise<T> {
+  const cached = getCachedValue(cache, key);
+
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const active = inFlight.get(key);
+
+  if (active) {
+    return active;
+  }
+
+  const pending = loader()
+    .then((value) => {
+      cache.set(key, {
+        value,
+        expiresAt: Date.now() + ttlMs,
+      });
+      return value;
+    })
+    .finally(() => {
+      inFlight.delete(key);
+    });
+
+  inFlight.set(key, pending);
+  return pending;
+}
+
+function shouldRetryStatus(status: number): boolean {
+  return RETRYABLE_STATUS_CODES.has(status);
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
+}
+
+async function fetchWithRetry(
+  input: string | URL,
+  options: FetchWithRetryOptions = {},
+): Promise<Response> {
+  const {
+    timeoutMs = DEFAULT_FETCH_TIMEOUT_MS,
+    retries = DEFAULT_FETCH_RETRIES,
+    baseBackoffMs = DEFAULT_FETCH_BACKOFF_MS,
+    signal: externalSignal,
+    ...requestInit
+  } = options;
+
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
+    const abortListener = () => {
+      controller.abort();
+    };
+
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        controller.abort();
+      } else {
+        externalSignal.addEventListener("abort", abortListener, { once: true });
+      }
+    }
+
+    try {
+      const response = await fetch(input, {
+        ...requestInit,
+        signal: controller.signal,
+      });
+
+      if (shouldRetryStatus(response.status) && attempt < retries) {
+        await sleep(baseBackoffMs * (attempt + 1));
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+
+      if (attempt >= retries || externalSignal?.aborted) {
+        break;
+      }
+
+      await sleep(baseBackoffMs * (attempt + 1));
+    } finally {
+      clearTimeout(timeoutId);
+      if (externalSignal) {
+        externalSignal.removeEventListener("abort", abortListener);
+      }
+    }
+  }
+
+  if (isAbortError(lastError)) {
+    throw new Error(`Request timed out after ${timeoutMs}ms.`);
+  }
+
+  if (lastError instanceof Error) {
+    throw lastError;
+  }
+
+  throw new Error("External request failed.");
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -132,6 +297,8 @@ function normalizeStateCode(input?: string): string | undefined {
 
 const COUNTY_DESIGNATOR_PATTERN =
   /\b(city and borough|county|parish|borough|census area|municipality|independent city|city)\b/gi;
+const COUNTY_ENDING_PATTERN =
+  /\b(city and borough|county|parish|borough|census area|municipality|independent city|city)\b$/i;
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -147,6 +314,20 @@ function normalizeCountyLabel(value: string): string {
     .replace(COUNTY_DESIGNATOR_PATTERN, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function formatCountyForAction(county: string): string {
+  const cleaned = county.trim().replace(/\s+/g, " ");
+
+  if (!cleaned) {
+    return county;
+  }
+
+  if (COUNTY_ENDING_PATTERN.test(cleaned)) {
+    return cleaned;
+  }
+
+  return `${cleaned} County`;
 }
 
 function countyMatchesDesignatedArea(county: string, designatedArea?: string): boolean {
@@ -277,189 +458,289 @@ function buildActions(
   actions.add("Set a 90-day insurance renewal alert to avoid surprise cancellations.");
 
   if (stateCode && county) {
-    actions.add(`Track ${county} County and ${stateCode} emergency alerts for grant windows and mitigation deadlines.`);
+    const countyDisplay = formatCountyForAction(county);
+    actions.add(`Track ${countyDisplay} and ${stateCode} emergency alerts for grant windows and mitigation deadlines.`);
   }
 
   return Array.from(actions).slice(0, 5);
 }
 
 async function geocodeAddress(address: string): Promise<SourceResult<GeocodedLocation>> {
-  const enrichedQuery = /\b(usa|united states|us)\b/i.test(address)
-    ? address
-    : `${address}, USA`;
+  const cacheKey = address.trim().toLowerCase();
 
-  const nominatimUrl = new URL("https://nominatim.openstreetmap.org/search");
-  nominatimUrl.searchParams.set("q", enrichedQuery);
-  nominatimUrl.searchParams.set("format", "json");
-  nominatimUrl.searchParams.set("limit", "1");
-  nominatimUrl.searchParams.set("addressdetails", "1");
-  nominatimUrl.searchParams.set("countrycodes", "us");
+  return withTtlCache(geocodeCache, geocodeInFlight, cacheKey, GEOCODE_CACHE_TTL_MS, async () => {
+    const enrichedQuery = /\b(usa|united states|us)\b/i.test(address)
+      ? address
+      : `${address}, USA`;
 
-  const nominatimResponse = await fetch(nominatimUrl, {
-    cache: "no-store",
-    headers: {
-      "User-Agent": "ClimateGuardMVP/1.0",
-      Accept: "application/json",
-    },
-  });
+    const nominatimUrl = new URL("https://nominatim.openstreetmap.org/search");
+    nominatimUrl.searchParams.set("q", enrichedQuery);
+    nominatimUrl.searchParams.set("format", "json");
+    nominatimUrl.searchParams.set("limit", "1");
+    nominatimUrl.searchParams.set("addressdetails", "1");
+    nominatimUrl.searchParams.set("countrycodes", "us");
 
-  if (!nominatimResponse.ok) {
+    let nominatimFailureNote = "Nominatim returned no match.";
+
+    try {
+      const nominatimResponse = await fetchWithRetry(nominatimUrl, {
+        cache: "no-store",
+        headers: {
+          "User-Agent": "ClimateGuardMVP/1.0",
+          Accept: "application/json",
+        },
+        timeoutMs: 6_000,
+      });
+
+      if (nominatimResponse.ok) {
+        const nominatimPayload = (await nominatimResponse.json()) as Array<{
+          lat?: string;
+          lon?: string;
+          display_name?: string;
+          address?: {
+            city?: string;
+            town?: string;
+            village?: string;
+            county?: string;
+            state?: string;
+            postcode?: string;
+          };
+        }>;
+
+        const first = nominatimPayload[0];
+        const lat = Number(first?.lat);
+        const lon = Number(first?.lon);
+
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
+          return {
+            value: {
+              lat,
+              lon,
+              city: first?.address?.city ?? first?.address?.town ?? first?.address?.village,
+              county: first?.address?.county,
+              state: normalizeStateCode(first?.address?.state),
+              postalCode: first?.address?.postcode,
+              resolvedAddress: first?.display_name ?? enrichedQuery,
+            },
+            source: {
+              name: "OpenStreetMap Nominatim Geocoding",
+              status: "live",
+              note: "Address geocoded with OpenStreetMap Nominatim (free public service).",
+            },
+          };
+        }
+
+        nominatimFailureNote = "Nominatim returned a result without coordinates.";
+      } else {
+        nominatimFailureNote = `Nominatim request failed with HTTP ${nominatimResponse.status}.`;
+      }
+    } catch (error) {
+      nominatimFailureNote =
+        error instanceof Error
+          ? `Nominatim request failed: ${error.message}`
+          : "Nominatim request failed.";
+    }
+
+    const zipMatch = address.match(/\b(\d{5})(?:-\d{4})?\b/);
+    const zipCode = zipMatch?.[1];
+
+    if (zipCode) {
+      try {
+        const zipResponse = await fetchWithRetry(`https://api.zippopotam.us/us/${zipCode}`, {
+          cache: "no-store",
+          headers: {
+            Accept: "application/json",
+          },
+          timeoutMs: 4_500,
+        });
+
+        if (zipResponse.ok) {
+          const zipPayload = (await zipResponse.json()) as {
+            "post code"?: string;
+            places?: Array<{
+              "place name"?: string;
+              state?: string;
+              "state abbreviation"?: string;
+              latitude?: string;
+              longitude?: string;
+            }>;
+          };
+
+          const firstPlace = zipPayload.places?.[0];
+          const lat = Number(firstPlace?.latitude);
+          const lon = Number(firstPlace?.longitude);
+
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            const stateCode = normalizeStateCode(firstPlace?.["state abbreviation"] ?? firstPlace?.state);
+            const city = firstPlace?.["place name"];
+            const resolvedAddress = city && stateCode
+              ? `${city}, ${stateCode} ${zipCode}`
+              : `${zipCode}, USA`;
+
+            return {
+              value: {
+                lat,
+                lon,
+                city,
+                state: stateCode,
+                postalCode: zipCode,
+                resolvedAddress,
+              },
+              source: {
+                name: "OpenStreetMap Nominatim Geocoding",
+                status: "fallback",
+                note: `${nominatimFailureNote} Used ZIP centroid fallback via Zippopotam.us.`,
+              },
+            };
+          }
+        }
+      } catch {
+        // Continue to final error path if both providers fail.
+      }
+    }
+
     throw new Error("Unable to geocode this address.");
-  }
-
-  const nominatimPayload = (await nominatimResponse.json()) as Array<{
-    lat?: string;
-    lon?: string;
-    display_name?: string;
-    address?: {
-      city?: string;
-      town?: string;
-      village?: string;
-      county?: string;
-      state?: string;
-      postcode?: string;
-    };
-  }>;
-
-  const first = nominatimPayload[0];
-  const lat = Number(first?.lat);
-  const lon = Number(first?.lon);
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-    throw new Error("Address lookup succeeded but coordinates were missing.");
-  }
-
-  return {
-    value: {
-      lat,
-      lon,
-      city: first?.address?.city ?? first?.address?.town ?? first?.address?.village,
-      county: first?.address?.county,
-      state: normalizeStateCode(first?.address?.state),
-      postalCode: first?.address?.postcode,
-      resolvedAddress: first?.display_name ?? enrichedQuery,
-    },
-    source: {
-      name: "OpenStreetMap Nominatim Geocoding",
-      status: "live",
-      note: "Address geocoded with OpenStreetMap Nominatim (free public service).",
-    },
-  };
+  });
 }
 
 async function fetchFemaSignals(stateCode?: string, county?: string): Promise<SourceResult<FemaSignals>> {
-  if (!stateCode) {
+  const cacheKey = `${stateCode ?? "none"}|${normalizeCountyLabel(county ?? "")}`;
+
+  return withTtlCache(femaCache, femaInFlight, cacheKey, FEMA_CACHE_TTL_MS, async () => {
+    if (!stateCode) {
+      return {
+        value: {
+          flood: 4,
+          wildfire: 4,
+          severeWeather: 4,
+          totalDeclarations: 0,
+        },
+        source: {
+          name: "FEMA Disaster Declarations",
+          status: "fallback",
+          note: "State could not be resolved, using neutral historical baseline.",
+        },
+      };
+    }
+
+    const sinceYear = new Date().getUTCFullYear() - 10;
+    const filter = `state eq '${stateCode}' and declarationDate ge '${sinceYear}-01-01T00:00:00.000Z'`;
+    const url = new URL("https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries");
+    url.searchParams.set("$filter", filter);
+    url.searchParams.set("$top", "1000");
+    url.searchParams.set("$select", "incidentType,designatedArea");
+
+    let response: Response;
+
+    try {
+      response = await fetchWithRetry(url, {
+        cache: "no-store",
+        timeoutMs: 8_000,
+      });
+    } catch {
+      return {
+        value: {
+          flood: 4.5,
+          wildfire: 4.2,
+          severeWeather: 4.4,
+          totalDeclarations: 0,
+        },
+        source: {
+          name: "FEMA Disaster Declarations",
+          status: "fallback",
+          note: "FEMA API request failed or timed out; neutral baseline applied.",
+        },
+      };
+    }
+
+    if (!response.ok) {
+      return {
+        value: {
+          flood: 4.5,
+          wildfire: 4.2,
+          severeWeather: 4.4,
+          totalDeclarations: 0,
+        },
+        source: {
+          name: "FEMA Disaster Declarations",
+          status: "fallback",
+          note: "FEMA API unavailable during request; neutral baseline applied.",
+        },
+      };
+    }
+
+    const payload = (await response.json()) as {
+      DisasterDeclarationsSummaries?: Array<{ incidentType?: string; designatedArea?: string }>;
+    };
+
+    const rows = payload.DisasterDeclarationsSummaries ?? [];
+    const stateDeclarationCount = rows.length;
+
+    if (stateDeclarationCount === 0) {
+      return {
+        value: {
+          flood: 4,
+          wildfire: 4,
+          severeWeather: 4,
+          totalDeclarations: 0,
+        },
+        source: {
+          name: "FEMA Disaster Declarations",
+          status: "fallback",
+          note: `No state-level declarations returned for ${stateCode} in the selected period.`,
+        },
+      };
+    }
+
+    const requestedCounty = county?.trim();
+    const countyRows = requestedCounty
+      ? rows.filter((row) => countyMatchesDesignatedArea(requestedCounty, row.designatedArea))
+      : [];
+    const scopedRows = countyRows.length > 0 ? countyRows : rows;
+    const totalDeclarations = scopedRows.length;
+
+    const counts = {
+      flood: 0,
+      wildfire: 0,
+      severeWeather: 0,
+    };
+
+    for (const row of scopedRows) {
+      const type = (row.incidentType ?? "").toLowerCase();
+
+      if (FLOOD_INCIDENT_KEYWORDS.some((keyword) => type.includes(keyword))) {
+        counts.flood += 1;
+      }
+
+      if (WILDFIRE_INCIDENT_KEYWORDS.some((keyword) => type.includes(keyword))) {
+        counts.wildfire += 1;
+      }
+
+      if (SEVERE_WEATHER_KEYWORDS.some((keyword) => type.includes(keyword))) {
+        counts.severeWeather += 1;
+      }
+    }
+
+    const note = requestedCounty
+      ? countyRows.length > 0
+        ? `Used ${totalDeclarations} county declarations from the last 10 years (${requestedCounty}, ${stateCode}).`
+        : `No county-level matches for ${requestedCounty}; used ${totalDeclarations} state declarations from the last 10 years (${stateCode}).`
+      : `Used ${totalDeclarations} state declarations from the last 10 years (${stateCode}).`;
+
     return {
       value: {
-        flood: 4,
-        wildfire: 4,
-        severeWeather: 4,
-        totalDeclarations: 0,
+        flood: toScoreFromCount(counts.flood, 30),
+        wildfire: toScoreFromCount(counts.wildfire, 20),
+        severeWeather: toScoreFromCount(counts.severeWeather, 35),
+        totalDeclarations,
       },
       source: {
         name: "FEMA Disaster Declarations",
-        status: "fallback",
-        note: "State could not be resolved, using neutral historical baseline.",
+        status: "live",
+        note,
       },
     };
-  }
-
-  const sinceYear = new Date().getUTCFullYear() - 10;
-  const filter = `state eq '${stateCode}' and declarationDate ge '${sinceYear}-01-01T00:00:00.000Z'`;
-  const url = new URL("https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries");
-  url.searchParams.set("$filter", filter);
-  url.searchParams.set("$top", "1000");
-  url.searchParams.set("$select", "incidentType,designatedArea");
-
-  const response = await fetch(url, { cache: "no-store" });
-
-  if (!response.ok) {
-    return {
-      value: {
-        flood: 4.5,
-        wildfire: 4.2,
-        severeWeather: 4.4,
-        totalDeclarations: 0,
-      },
-      source: {
-        name: "FEMA Disaster Declarations",
-        status: "fallback",
-        note: "FEMA API unavailable during request; neutral baseline applied.",
-      },
-    };
-  }
-
-  const payload = (await response.json()) as {
-    DisasterDeclarationsSummaries?: Array<{ incidentType?: string; designatedArea?: string }>;
-  };
-
-  const rows = payload.DisasterDeclarationsSummaries ?? [];
-  const stateDeclarationCount = rows.length;
-
-  if (stateDeclarationCount === 0) {
-    return {
-      value: {
-        flood: 4,
-        wildfire: 4,
-        severeWeather: 4,
-        totalDeclarations: 0,
-      },
-      source: {
-        name: "FEMA Disaster Declarations",
-        status: "fallback",
-        note: `No state-level declarations returned for ${stateCode} in the selected period.`,
-      },
-    };
-  }
-
-  const requestedCounty = county?.trim();
-  const countyRows = requestedCounty
-    ? rows.filter((row) => countyMatchesDesignatedArea(requestedCounty, row.designatedArea))
-    : [];
-  const scopedRows = countyRows.length > 0 ? countyRows : rows;
-  const totalDeclarations = scopedRows.length;
-
-  const counts = {
-    flood: 0,
-    wildfire: 0,
-    severeWeather: 0,
-  };
-
-  for (const row of scopedRows) {
-    const type = (row.incidentType ?? "").toLowerCase();
-
-    if (FLOOD_INCIDENT_KEYWORDS.some((keyword) => type.includes(keyword))) {
-      counts.flood += 1;
-    }
-
-    if (WILDFIRE_INCIDENT_KEYWORDS.some((keyword) => type.includes(keyword))) {
-      counts.wildfire += 1;
-    }
-
-    if (SEVERE_WEATHER_KEYWORDS.some((keyword) => type.includes(keyword))) {
-      counts.severeWeather += 1;
-    }
-  }
-
-  const note = requestedCounty
-    ? countyRows.length > 0
-      ? `Used ${totalDeclarations} county declarations from the last 10 years (${requestedCounty}, ${stateCode}).`
-      : `No county-level matches for ${requestedCounty}; used ${totalDeclarations} state declarations from the last 10 years (${stateCode}).`
-    : `Used ${totalDeclarations} state declarations from the last 10 years (${stateCode}).`;
-
-  return {
-    value: {
-      flood: toScoreFromCount(counts.flood, 30),
-      wildfire: toScoreFromCount(counts.wildfire, 20),
-      severeWeather: toScoreFromCount(counts.severeWeather, 35),
-      totalDeclarations,
-    },
-    source: {
-      name: "FEMA Disaster Declarations",
-      status: "live",
-      note,
-    },
-  };
+  });
 }
 
 function severityWeight(severity?: string): number {
@@ -478,77 +759,100 @@ function severityWeight(severity?: string): number {
 }
 
 async function fetchNoaaAlerts(lat: number, lon: number): Promise<SourceResult<WeatherSignals>> {
-  const url = new URL("https://api.weather.gov/alerts/active");
-  url.searchParams.set("point", `${lat.toFixed(4)},${lon.toFixed(4)}`);
+  const cacheKey = `${lat.toFixed(3)},${lon.toFixed(3)}`;
 
-  const response = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      Accept: "application/geo+json",
-      "User-Agent": "ClimateGuardMVP/1.0",
-    },
-  });
+  return withTtlCache(noaaCache, noaaInFlight, cacheKey, NOAA_CACHE_TTL_MS, async () => {
+    const url = new URL("https://api.weather.gov/alerts/active");
+    url.searchParams.set("point", `${lat.toFixed(4)},${lon.toFixed(4)}`);
 
-  if (!response.ok) {
+    let response: Response;
+
+    try {
+      response = await fetchWithRetry(url, {
+        cache: "no-store",
+        headers: {
+          Accept: "application/geo+json",
+          "User-Agent": "ClimateGuardMVP/1.0",
+        },
+        timeoutMs: 7_000,
+      });
+    } catch {
+      return {
+        value: {
+          flood: 0,
+          wildfire: 0,
+          severeWeather: 0,
+          alertCount: 0,
+        },
+        source: {
+          name: "NOAA/NWS Active Alerts",
+          status: "fallback",
+          note: "NOAA alert service failed or timed out for this request; current-alert weighting skipped.",
+        },
+      };
+    }
+
+    if (!response.ok) {
+      return {
+        value: {
+          flood: 0,
+          wildfire: 0,
+          severeWeather: 0,
+          alertCount: 0,
+        },
+        source: {
+          name: "NOAA/NWS Active Alerts",
+          status: "fallback",
+          note: "NOAA alert service unavailable for this request; current-alert weighting skipped.",
+        },
+      };
+    }
+
+    const payload = (await response.json()) as {
+      features?: Array<{
+        properties?: {
+          event?: string;
+          severity?: string;
+        };
+      }>;
+    };
+
+    const alerts = payload.features ?? [];
+    let floodPoints = 0;
+    let wildfirePoints = 0;
+    let weatherPoints = 0;
+
+    for (const feature of alerts) {
+      const event = (feature.properties?.event ?? "").toLowerCase();
+      const weight = severityWeight(feature.properties?.severity);
+
+      if (/(flood|hurricane|storm surge|coastal flood|flash flood|tropical)/.test(event)) {
+        floodPoints += weight;
+      }
+
+      if (/(fire|red flag|smoke)/.test(event)) {
+        wildfirePoints += weight;
+      }
+
+      if (/(thunderstorm|tornado|wind|hail|heat|cold|winter|ice)/.test(event)) {
+        weatherPoints += weight;
+      }
+    }
+
     return {
       value: {
-        flood: 0,
-        wildfire: 0,
-        severeWeather: 0,
-        alertCount: 0,
+        flood: clamp((floodPoints / 8) * 10, 0, 10),
+        wildfire: clamp((wildfirePoints / 8) * 10, 0, 10),
+        severeWeather: clamp((weatherPoints / 8) * 10, 0, 10),
+        alertCount: alerts.length,
       },
       source: {
         name: "NOAA/NWS Active Alerts",
-        status: "fallback",
-        note: "NOAA alert service unavailable for this request; current-alert weighting skipped.",
+        status: "live",
+        note: `${alerts.length} active regional weather alerts processed.`,
       },
     };
-  }
-
-  const payload = (await response.json()) as {
-    features?: Array<{
-      properties?: {
-        event?: string;
-        severity?: string;
-      };
-    }>;
-  };
-
-  const alerts = payload.features ?? [];
-  let floodPoints = 0;
-  let wildfirePoints = 0;
-  let weatherPoints = 0;
-
-  for (const feature of alerts) {
-    const event = (feature.properties?.event ?? "").toLowerCase();
-    const weight = severityWeight(feature.properties?.severity);
-
-    if (/(flood|hurricane|storm surge|coastal flood|flash flood|tropical)/.test(event)) {
-      floodPoints += weight;
-    }
-
-    if (/(fire|red flag|smoke)/.test(event)) {
-      wildfirePoints += weight;
-    }
-
-    if (/(thunderstorm|tornado|wind|hail|heat|cold|winter|ice)/.test(event)) {
-      weatherPoints += weight;
-    }
-  }
-
-  return {
-    value: {
-      flood: clamp((floodPoints / 8) * 10, 0, 10),
-      wildfire: clamp((wildfirePoints / 8) * 10, 0, 10),
-      severeWeather: clamp((weatherPoints / 8) * 10, 0, 10),
-      alertCount: alerts.length,
-    },
-    source: {
-      name: "NOAA/NWS Active Alerts",
-      status: "live",
-      note: `${alerts.length} active regional weather alerts processed.`,
-    },
-  };
+  });
 }
 
 function computeCompositeBreakdown(
@@ -648,143 +952,157 @@ async function generateAdvisory(
   const nimApiKey = process.env.NVIDIA_NIM_API_KEY;
   const nimBaseUrl = process.env.NVIDIA_NIM_BASE_URL ?? "https://integrate.api.nvidia.com/v1";
   const nimModel = process.env.NVIDIA_NIM_MODEL ?? "meta/llama-3.3-70b-instruct";
+  const prompt = advisoryPrompt(location, score, riskLevel, breakdown, actions);
+  const cacheKey = JSON.stringify({
+    location: location.resolvedAddress,
+    score,
+    riskLevel,
+    breakdown,
+    actions,
+    geminiModel,
+    nimModel,
+  });
 
-  if (geminiApiKey) {
-    try {
-      const url = new URL(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
-      );
-      url.searchParams.set("key", geminiApiKey);
+  return withTtlCache(advisoryCache, advisoryInFlight, cacheKey, ADVISORY_CACHE_TTL_MS, async () => {
+    if (geminiApiKey) {
+      try {
+        const url = new URL(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
+        );
+        url.searchParams.set("key", geminiApiKey);
 
-      const response = await fetch(url, {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [
-              {
-                text: "You are ClimateGuard, a climate risk advisor. Be concrete, specific, and practical.",
-              },
-            ],
+        const response = await fetchWithRetry(url, {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
           },
-          contents: [
-            {
-              role: "user",
+          body: JSON.stringify({
+            systemInstruction: {
               parts: [
                 {
-                  text: advisoryPrompt(location, score, riskLevel, breakdown, actions),
+                  text: "You are ClimateGuard, a climate risk advisor. Be concrete, specific, and practical.",
                 },
               ],
             },
-          ],
-          generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 260,
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    text: prompt,
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 260,
+            },
+          }),
+          timeoutMs: 12_000,
+        });
+
+        if (response.ok) {
+          const payload = (await response.json()) as {
+            candidates?: Array<{
+              content?: {
+                parts?: Array<{ text?: string }>;
+              };
+            }>;
+          };
+
+          const advisory = payload.candidates?.[0]?.content?.parts
+            ?.map((part) => part.text?.trim() ?? "")
+            .join(" ")
+            .trim();
+
+          if (advisory) {
+            return {
+              text: advisory,
+              source: {
+                name: "Google Gemini Advisory",
+                status: "live",
+                note: `Advisory generated by Gemini (${geminiModel}).`,
+              },
+            };
+          }
+        } else {
+          console.error(`Gemini advisory request failed with HTTP ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Gemini advisory generation failed", error);
+      }
+    }
+
+    if (nimApiKey) {
+      try {
+        const nimUrl = new URL("chat/completions", nimBaseUrl.endsWith("/") ? nimBaseUrl : `${nimBaseUrl}/`);
+        const response = await fetchWithRetry(nimUrl, {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${nimApiKey}`,
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            model: nimModel,
+            temperature: 0.3,
+            max_tokens: 260,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are ClimateGuard, a climate risk advisor. Be concrete, specific, and practical.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+          }),
+          timeoutMs: 12_000,
+        });
 
-      if (response.ok) {
-        const payload = (await response.json()) as {
-          candidates?: Array<{
-            content?: {
-              parts?: Array<{ text?: string }>;
-            };
-          }>;
-        };
-
-        const advisory = payload.candidates?.[0]?.content?.parts
-          ?.map((part) => part.text?.trim() ?? "")
-          .join(" ")
-          .trim();
-
-        if (advisory) {
-          return {
-            text: advisory,
-            source: {
-              name: "Google Gemini Advisory",
-              status: "live",
-              note: `Advisory generated by Gemini (${geminiModel}).`,
-            },
+        if (response.ok) {
+          const payload = (await response.json()) as {
+            choices?: Array<{
+              message?: {
+                content?: string;
+              };
+            }>;
           };
-        }
-      } else {
-        console.error(`Gemini advisory request failed with HTTP ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Gemini advisory generation failed", error);
-    }
-  }
 
-  if (nimApiKey) {
-    try {
-      const nimUrl = new URL("chat/completions", nimBaseUrl.endsWith("/") ? nimBaseUrl : `${nimBaseUrl}/`);
-      const response = await fetch(nimUrl, {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          Authorization: `Bearer ${nimApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: nimModel,
-          temperature: 0.3,
-          max_tokens: 260,
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are ClimateGuard, a climate risk advisor. Be concrete, specific, and practical.",
-            },
-            {
-              role: "user",
-              content: advisoryPrompt(location, score, riskLevel, breakdown, actions),
-            },
-          ],
-        }),
-      });
+          const advisory = payload.choices?.[0]?.message?.content?.trim();
 
-      if (response.ok) {
-        const payload = (await response.json()) as {
-          choices?: Array<{
-            message?: {
-              content?: string;
+          if (advisory) {
+            return {
+              text: advisory,
+              source: {
+                name: "NVIDIA NIM Advisory",
+                status: "fallback",
+                note: `Gemini unavailable; advisory generated by NVIDIA NIM (${nimModel}).`,
+              },
             };
-          }>;
-        };
-
-        const advisory = payload.choices?.[0]?.message?.content?.trim();
-
-        if (advisory) {
-          return {
-            text: advisory,
-            source: {
-              name: "NVIDIA NIM Advisory",
-              status: "fallback",
-              note: `Gemini unavailable; advisory generated by NVIDIA NIM (${nimModel}).`,
-            },
-          };
+          }
+        } else {
+          console.error(`NVIDIA NIM advisory request failed with HTTP ${response.status}`);
         }
-      } else {
-        console.error(`NVIDIA NIM advisory request failed with HTTP ${response.status}`);
+      } catch (error) {
+        console.error("NVIDIA NIM advisory generation failed", error);
       }
-    } catch (error) {
-      console.error("NVIDIA NIM advisory generation failed", error);
     }
-  }
 
-  return {
-    text: buildTemplateAdvisory(score, riskLevel, location, actions),
-    source: {
-      name: "AI Advisory",
-      status: "fallback",
-      note:
-        "No working Gemini or NVIDIA NIM key configured (or request failed); using deterministic advisory template.",
-    },
-  };
+    return {
+      text: buildTemplateAdvisory(score, riskLevel, location, actions),
+      source: {
+        name: "AI Advisory",
+        status: "fallback",
+        note:
+          "No working Gemini or NVIDIA NIM key configured (or request failed); using deterministic advisory template.",
+      },
+    };
+  });
 }
 
 export async function generateRiskAssessment(inputAddress: string): Promise<RiskResponse> {

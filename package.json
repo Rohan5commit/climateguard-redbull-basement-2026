@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "validate:addresses": "node scripts/run-validation.mjs"
+    "validate:addresses": "node scripts/run-validation.mjs",
+    "stress": "node scripts/stress-test.mjs",
+    "stress:failover": "node scripts/failover-stress-test.mjs"
   },
   "dependencies": {
     "next": "16.1.6",

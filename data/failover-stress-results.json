@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-03-02T11:20:05.585Z",
+  "baseUrl": "http://localhost:3000",
+  "durationSec": 300,
+  "concurrency": 12,
+  "timeoutMs": 35000,
+  "total": 753757,
+  "okCount": 753757,
+  "failCount": 0,
+  "successRate": 100,
+  "nimSharePercentAmongSuccesses": 100,
+  "latencyMs": {
+    "avg": 4.74,
+    "p95": 9.59,
+    "p99": 16.32,
+    "max": 6447.35
+  },
+  "statusCounts": {
+    "200": 753757
+  },
+  "sourceCounts": {
+    "NVIDIA NIM Advisory": 753757
+  },
+  "topErrors": []
+}
