@@ -1,13 +1,15 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink-main: #edf4ff;
+  --ink-muted: #b4c7df;
+  --line-soft: rgba(155, 182, 219, 0.24);
+  --bg-base: #090f1a;
+  --bg-alt: #0d1626;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
@@ -17,26 +19,25 @@ body {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink-main);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(41, 61, 88, 0.62), transparent 42%),
+    radial-gradient(circle at 92% 18%, rgba(116, 65, 44, 0.22), transparent 36%),
+    linear-gradient(180deg, var(--bg-alt), var(--bg-base));
+  font-family: var(--font-display), sans-serif;
+  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 a {
   color: inherit;
   text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }

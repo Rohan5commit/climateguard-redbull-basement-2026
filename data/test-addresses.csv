@@ -1,0 +1,16 @@
+label,address,city,state,zip,risk_profile
+CA-Coastal-01,2100 Beach Blvd,Pacifica,CA,94044,Coastal flood and erosion exposure during storms
+CA-Wildfire-02,1411 Clark Rd,Paradise,CA,95969,High wildfire exposure in WUI corridor
+CA-Heat-03,100 E Tahquitz Canyon Way,Palm Springs,CA,92262,Extreme heat risk and dehydration potential
+FL-Coastal-04,1100 S Ocean Dr,Miami Beach,FL,33139,Storm surge and hurricane wind exposure
+FL-LowElevation-05,201 William St,Key West,FL,33040,Tidal flooding and hurricane surge risk
+FL-GulfCoast-06,1500 Estero Blvd,Fort Myers Beach,FL,33931,Hurricane surge and coastal flood exposure
+TX-UrbanFlood-07,1000 Bagby St,Houston,TX,77002,Urban flash flood and heat stress risk
+TX-Coastal-08,2100 Harborside Dr,Galveston,TX,77550,Storm surge and tropical cyclone risk
+TX-HeatDrought-09,1500 S Capital of Texas Hwy,Austin,TX,78746,Extreme heat and drought stress risk
+LA-DeltaFlood-10,1600 Pauger St,New Orleans,LA,70117,Riverine and coastal flood risk
+LA-Hurricane-11,1001 Ryan St,Lake Charles,LA,70601,Hurricane wind and flood recurrence risk
+LA-InlandFlood-12,660 N Foster Dr,Baton Rouge,LA,70806,Flash flood and heat stress risk
+NY-Coastal-13,1 W Broadway,Long Beach,NY,11561,Coastal storm surge and flood risk
+NY-Surge-14,200 Father Capodanno Blvd,Staten Island,NY,10305,Storm surge and heavy rain flooding risk
+NY-Rockaway-15,108-20 Rockaway Beach Dr,Rockaway Park,NY,11694,Coastal flooding and wind exposure
