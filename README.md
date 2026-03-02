@@ -5,10 +5,10 @@ It gives homeowners and renters a plain-language **5-year climate risk outlook**
 
 ## Why this project is competition-ready
 
-- Solves an emotional, high-stakes problem: households often learn risk too late.
-- Uses AI at the core: risk data is translated into concise action guidance.
+- Solves a high-stakes household problem: climate risk is hard to interpret quickly.
+- Uses AI to translate risk data into concise action guidance.
 - Is easy to explain and demo in 60 seconds.
-- Includes measurable outputs: risk score, hazard breakdown, actions, and source confidence.
+- Produces measurable outputs: risk score, hazard breakdown, actions, and source confidence.
 
 ## MVP capabilities
 
@@ -17,10 +17,7 @@ It gives homeowners and renters a plain-language **5-year climate risk outlook**
   - Flood
   - Wildfire
   - Severe weather
-- AI advisory layer:
-  - Primary: Azure OpenAI
-  - Fallback: OpenAI API
-  - Final fallback: deterministic template when no keys are configured
+- AI advisory generation powered by Gemini.
 - Assistance program links (federal + selected state resources).
 - Data-source transparency (`live`, `fallback`, `unavailable`).
 - Validation package with 15 high-risk U.S. addresses.
@@ -29,16 +26,14 @@ It gives homeowners and renters a plain-language **5-year climate risk outlook**
 
 - Next.js 16 (App Router, TypeScript)
 - React 19
-- `openai` SDK (Azure/OpenAI support)
+- Gemini API integration for advisory output
 - `zod` for API input validation
 
-## Data sources used
+## Free data sources used
 
-- Azure Maps Geocoding (primary, if configured)
-- OpenStreetMap Nominatim (fallback geocoder)
-- FEMA Open Data - Disaster Declarations
-- NOAA/NWS Active Alerts API
-- First Street Risk API (optional enrichment if key is configured)
+- OSM Nominatim (OpenStreetMap geocoding)
+- FEMA OpenFEMA datasets
+- NOAA/NWS alerts
 
 ## Quick start
 
@@ -52,25 +47,13 @@ Open: `http://localhost:3000`
 
 ## Environment variables
 
-Set these in `.env.local`:
+Set this in `.env.local`:
 
 ```bash
-# Azure Maps geocoding
-AZURE_MAPS_KEY=
-
-# Azure OpenAI (recommended)
-AZURE_OPENAI_ENDPOINT=
-AZURE_OPENAI_API_KEY=
-AZURE_OPENAI_DEPLOYMENT=
-AZURE_OPENAI_API_VERSION=2024-10-21
-
-# Optional fallback if Azure OpenAI is not configured
-OPENAI_API_KEY=
-
-# Optional property-level risk enrichment
-FIRST_STREET_API_KEY=
-FIRST_STREET_API_BASE=https://api.firststreet.org/v1
+GEMINI_API_KEY=
 ```
+
+`GEMINI_API_KEY` is the only required key. Data retrieval uses free public sources.
 
 ## API
 
@@ -89,7 +72,7 @@ Response includes:
 - `fiveYearRiskScore` (0-100)
 - `riskLevel` (`Low|Moderate|High|Severe`)
 - `breakdown` (flood/wildfire/severeWeather)
-- `advisory` (AI-generated or fallback)
+- `advisory`
 - `actions` (prioritized mitigation steps)
 - `assistancePrograms`
 - `dataSources`
@@ -126,10 +109,10 @@ npm run build
 Recommended: Vercel
 
 1. Import this repo into Vercel.
-2. Add the same environment variables in project settings.
+2. Add `GEMINI_API_KEY` in project settings.
 3. Deploy.
 
 ## Notes
 
-- The app runs without keys using fallbacks, but quality and confidence are higher with Azure Maps + Azure OpenAI + First Street configured.
+- ClimateGuard is documented here as a strict free-data stack: OSM Nominatim + FEMA OpenFEMA + NOAA/NWS alerts.
 - This MVP is for early warning and action planning, not legal/insurance underwriting decisions.

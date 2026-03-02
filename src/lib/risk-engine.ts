@@ -1,5 +1,3 @@
-import { AzureOpenAI, OpenAI } from "openai";
-
 import { getProgramsForState } from "@/lib/programs";
 import type {
   DataSourceStatus,
@@ -87,12 +85,6 @@ const SEVERE_WEATHER_KEYWORDS = [
   "drought",
   "cold",
 ];
-
-interface FirstStreetSignals {
-  flood: number | null;
-  wildfire: number | null;
-  severeWeather: number | null;
-}
 
 interface SourceResult<T> {
   value: T;
@@ -234,52 +226,6 @@ function weightedAverage(
   return clamp(weightedTotal / totalWeight, 0, 10);
 }
 
-function getPathValue(payload: unknown, path: string): unknown {
-  if (payload === null || typeof payload !== "object") {
-    return undefined;
-  }
-
-  return path.split(".").reduce<unknown>((accumulator, key) => {
-    if (accumulator === null || typeof accumulator !== "object") {
-      return undefined;
-    }
-
-    return (accumulator as Record<string, unknown>)[key];
-  }, payload);
-}
-
-function normalizeExternalFactor(rawValue: number): number {
-  if (rawValue <= 10) {
-    return rawValue;
-  }
-
-  if (rawValue <= 100) {
-    return rawValue / 10;
-  }
-
-  return rawValue / 100;
-}
-
-function pickNumeric(payload: unknown, paths: string[]): number | null {
-  for (const path of paths) {
-    const candidate = getPathValue(payload, path);
-
-    if (typeof candidate === "number" && Number.isFinite(candidate)) {
-      return clamp(normalizeExternalFactor(candidate), 0, 10);
-    }
-
-    if (typeof candidate === "string") {
-      const parsed = Number(candidate);
-
-      if (Number.isFinite(parsed)) {
-        return clamp(normalizeExternalFactor(parsed), 0, 10);
-      }
-    }
-  }
-
-  return null;
-}
-
 function buildKeyDrivers(breakdown: RiskBreakdown, riskLevel: RiskLevel): string[] {
   const drivers: string[] = [];
 
@@ -338,59 +284,9 @@ function buildActions(
 }
 
 async function geocodeAddress(address: string): Promise<SourceResult<GeocodedLocation>> {
-  const azureMapsKey = process.env.AZURE_MAPS_KEY;
   const enrichedQuery = /\b(usa|united states|us)\b/i.test(address)
     ? address
     : `${address}, USA`;
-
-  if (azureMapsKey) {
-    const azureUrl = new URL("https://atlas.microsoft.com/search/address/json");
-    azureUrl.searchParams.set("api-version", "1.0");
-    azureUrl.searchParams.set("subscription-key", azureMapsKey);
-    azureUrl.searchParams.set("query", enrichedQuery);
-    azureUrl.searchParams.set("limit", "1");
-    azureUrl.searchParams.set("countrySet", "US");
-
-    const response = await fetch(azureUrl, { cache: "no-store" });
-
-    if (response.ok) {
-      const payload = (await response.json()) as {
-        results?: Array<{
-          position?: { lat?: number; lon?: number };
-          address?: {
-            freeformAddress?: string;
-            municipality?: string;
-            countrySecondarySubdivision?: string;
-            countrySubdivisionCode?: string;
-            postalCode?: string;
-          };
-        }>;
-      };
-
-      const firstResult = payload.results?.[0];
-      const lat = firstResult?.position?.lat;
-      const lon = firstResult?.position?.lon;
-
-      if (typeof lat === "number" && typeof lon === "number") {
-        return {
-          value: {
-            lat,
-            lon,
-            city: firstResult?.address?.municipality,
-            county: firstResult?.address?.countrySecondarySubdivision,
-            state: normalizeStateCode(firstResult?.address?.countrySubdivisionCode),
-            postalCode: firstResult?.address?.postalCode,
-            resolvedAddress: firstResult?.address?.freeformAddress ?? enrichedQuery,
-          },
-          source: {
-            name: "Azure Maps Geocoding",
-            status: "live",
-            note: "Address geocoded with Azure Maps.",
-          },
-        };
-      }
-    }
-  }
 
   const nominatimUrl = new URL("https://nominatim.openstreetmap.org/search");
   nominatimUrl.searchParams.set("q", enrichedQuery);
@@ -444,9 +340,9 @@ async function geocodeAddress(address: string): Promise<SourceResult<GeocodedLoc
       resolvedAddress: first?.display_name ?? enrichedQuery,
     },
     source: {
-      name: "Azure Maps Geocoding",
-      status: "fallback",
-      note: "AZURE_MAPS_KEY missing or unavailable, using OpenStreetMap geocoding fallback.",
+      name: "OpenStreetMap Nominatim Geocoding",
+      status: "live",
+      note: "Address geocoded with OpenStreetMap Nominatim (free public service).",
     },
   };
 }
@@ -655,129 +551,24 @@ async function fetchNoaaAlerts(lat: number, lon: number): Promise<SourceResult<W
   };
 }
 
-async function fetchFirstStreetSignals(
-  lat: number,
-  lon: number,
-): Promise<SourceResult<FirstStreetSignals>> {
-  const apiKey = process.env.FIRST_STREET_API_KEY;
-  const apiBase = process.env.FIRST_STREET_API_BASE ?? "https://api.firststreet.org/v1";
-
-  if (!apiKey) {
-    return {
-      value: {
-        flood: null,
-        wildfire: null,
-        severeWeather: null,
-      },
-      source: {
-        name: "First Street Risk API",
-        status: "unavailable",
-        note: "FIRST_STREET_API_KEY is not configured.",
-      },
-    };
-  }
-
-  const url = new URL("property/summary", apiBase.endsWith("/") ? apiBase : `${apiBase}/`);
-  url.searchParams.set("lat", `${lat}`);
-  url.searchParams.set("lng", `${lon}`);
-
-  const response = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      apikey: apiKey,
-      "x-api-key": apiKey,
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    return {
-      value: {
-        flood: null,
-        wildfire: null,
-        severeWeather: null,
-      },
-      source: {
-        name: "First Street Risk API",
-        status: "fallback",
-        note: `Request failed with HTTP ${response.status}; continuing with FEMA and NOAA signals.`,
-      },
-    };
-  }
-
-  const payload = await response.json();
-  const flood = pickNumeric(payload, [
-    "floodFactor",
-    "flood.score",
-    "flood.factor",
-    "data.floodFactor",
-  ]);
-  const wildfire = pickNumeric(payload, [
-    "fireFactor",
-    "wildfireFactor",
-    "fire.score",
-    "data.fireFactor",
-  ]);
-  const severeWeather = pickNumeric(payload, [
-    "windFactor",
-    "heatFactor",
-    "wind.score",
-    "heat.score",
-    "data.windFactor",
-    "data.heatFactor",
-  ]);
-
-  if (flood === null && wildfire === null && severeWeather === null) {
-    return {
-      value: {
-        flood,
-        wildfire,
-        severeWeather,
-      },
-      source: {
-        name: "First Street Risk API",
-        status: "fallback",
-        note: "Response received but expected score fields were missing.",
-      },
-    };
-  }
-
-  return {
-    value: {
-      flood,
-      wildfire,
-      severeWeather,
-    },
-    source: {
-      name: "First Street Risk API",
-      status: "live",
-      note: "Property-level climate factors loaded successfully.",
-    },
-  };
-}
-
 function computeCompositeBreakdown(
-  firstStreet: FirstStreetSignals,
   fema: FemaSignals,
   weather: WeatherSignals,
 ): RiskBreakdown {
   const flood = weightedAverage([
-    { value: firstStreet.flood, weight: 0.55 },
-    { value: fema.flood, weight: 0.35 },
-    { value: weather.flood, weight: 0.1 },
-  ]);
+    { value: fema.flood, weight: 0.75 },
+    { value: weather.flood, weight: 0.25 },
+  ], 4);
 
   const wildfire = weightedAverage([
-    { value: firstStreet.wildfire, weight: 0.55 },
-    { value: fema.wildfire, weight: 0.35 },
-    { value: weather.wildfire, weight: 0.1 },
-  ]);
+    { value: fema.wildfire, weight: 0.75 },
+    { value: weather.wildfire, weight: 0.25 },
+  ], 4);
 
   const severeWeather = weightedAverage([
-    { value: firstStreet.severeWeather, weight: 0.5 },
-    { value: fema.severeWeather, weight: 0.35 },
-    { value: weather.severeWeather, weight: 0.15 },
-  ]);
+    { value: fema.severeWeather, weight: 0.7 },
+    { value: weather.severeWeather, weight: 0.3 },
+  ], 4);
 
   return {
     flood: roundToOne(flood),
@@ -852,90 +643,76 @@ async function generateAdvisory(
   breakdown: RiskBreakdown,
   actions: string[],
 ): Promise<AdvisoryResult> {
-  const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
-  const azureApiKey = process.env.AZURE_OPENAI_API_KEY;
-  const azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT;
-  const azureApiVersion = process.env.AZURE_OPENAI_API_VERSION ?? "2024-10-21";
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  const geminiModel = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
 
-  if (azureEndpoint && azureApiKey && azureDeployment) {
+  if (geminiApiKey) {
     try {
-      const client = new AzureOpenAI({
-        endpoint: azureEndpoint,
-        apiKey: azureApiKey,
-        deployment: azureDeployment,
-        apiVersion: azureApiVersion,
+      const url = new URL(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
+      );
+      url.searchParams.set("key", geminiApiKey);
+
+      const response = await fetch(url, {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [
+              {
+                text: "You are ClimateGuard, a climate risk advisor. Be concrete, specific, and practical.",
+              },
+            ],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: advisoryPrompt(location, score, riskLevel, breakdown, actions),
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 260,
+          },
+        }),
       });
 
-      const completion = await client.chat.completions.create({
-        model: azureDeployment,
-        temperature: 0.3,
-        max_tokens: 260,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are ClimateGuard, a climate risk advisor. Be concrete, specific, and practical.",
-          },
-          {
-            role: "user",
-            content: advisoryPrompt(location, score, riskLevel, breakdown, actions),
-          },
-        ],
-      });
-
-      const advisory = completion.choices[0]?.message?.content?.trim();
-
-      if (advisory) {
-        return {
-          text: advisory,
-          source: {
-            name: "Azure OpenAI Advisory",
-            status: "live",
-            note: "Advisory generated by Azure OpenAI.",
-          },
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          candidates?: Array<{
+            content?: {
+              parts?: Array<{ text?: string }>;
+            };
+          }>;
         };
+
+        const advisory = payload.candidates?.[0]?.content?.parts
+          ?.map((part) => part.text?.trim() ?? "")
+          .join(" ")
+          .trim();
+
+        if (advisory) {
+          return {
+            text: advisory,
+            source: {
+              name: "Google Gemini Advisory",
+              status: "live",
+              note: `Advisory generated by Gemini (${geminiModel}).`,
+            },
+          };
+        }
+      } else {
+        console.error(`Gemini advisory request failed with HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error("Azure OpenAI advisory generation failed", error);
-    }
-  }
-
-  const openAiApiKey = process.env.OPENAI_API_KEY;
-
-  if (openAiApiKey) {
-    try {
-      const client = new OpenAI({ apiKey: openAiApiKey });
-      const completion = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0.3,
-        max_tokens: 260,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are ClimateGuard, a climate risk advisor. Be concrete, specific, and practical.",
-          },
-          {
-            role: "user",
-            content: advisoryPrompt(location, score, riskLevel, breakdown, actions),
-          },
-        ],
-      });
-
-      const advisory = completion.choices[0]?.message?.content?.trim();
-
-      if (advisory) {
-        return {
-          text: advisory,
-          source: {
-            name: "OpenAI Advisory",
-            status: "fallback",
-            note: "Azure OpenAI not configured, using OpenAI API fallback.",
-          },
-        };
-      }
-    } catch (error) {
-      console.error("OpenAI advisory generation failed", error);
+      console.error("Gemini advisory generation failed", error);
     }
   }
 
@@ -944,7 +721,7 @@ async function generateAdvisory(
     source: {
       name: "AI Advisory",
       status: "fallback",
-      note: "No OpenAI key configured, using deterministic advisory template.",
+      note: "No GEMINI_API_KEY configured or request failed; using deterministic advisory template.",
     },
   };
 }
@@ -955,19 +732,14 @@ export async function generateRiskAssessment(inputAddress: string): Promise<Risk
   const geocoded = await geocodeAddress(inputAddress);
   dataSources.push(geocoded.source);
 
-  const [femaSignals, weatherSignals, firstStreetSignals] = await Promise.all([
+  const [femaSignals, weatherSignals] = await Promise.all([
     fetchFemaSignals(geocoded.value.state, geocoded.value.county),
     fetchNoaaAlerts(geocoded.value.lat, geocoded.value.lon),
-    fetchFirstStreetSignals(geocoded.value.lat, geocoded.value.lon),
   ]);
 
-  dataSources.push(femaSignals.source, weatherSignals.source, firstStreetSignals.source);
+  dataSources.push(femaSignals.source, weatherSignals.source);
 
-  const breakdown = computeCompositeBreakdown(
-    firstStreetSignals.value,
-    femaSignals.value,
-    weatherSignals.value,
-  );
+  const breakdown = computeCompositeBreakdown(femaSignals.value, weatherSignals.value);
 
   const composite = Math.round(
     clamp(
