@@ -3,6 +3,8 @@
 ClimateGuard is a full-stack Next.js MVP for **Red Bull Basement 2026**.
 It gives homeowners and renters a plain-language **5-year climate risk outlook** from a single U.S. address.
 
+**"ClimateGuard is architected for Azure OpenAI (GPT-4o) in production, with Gemini used for development and demo purposes due to Azure credit constraints during MVP phase."**
+
 ## Why this project is competition-ready
 
 - Solves a high-stakes household problem: climate risk is hard to interpret quickly.
@@ -23,6 +25,18 @@ It gives homeowners and renters a plain-language **5-year climate risk outlook**
 - Assistance program links (federal + selected state resources).
 - Data-source transparency (`live`, `fallback`, `unavailable`).
 - Validation package with 15 high-risk U.S. addresses.
+
+## Demo Outputs
+
+![Miami Flood Risk](docs/demo-screenshots/miami-flood-risk.png)
+![Paradise Wildfire Risk](docs/demo-screenshots/paradise-wildfire-risk.png)
+![Houston Hurricane Risk](docs/demo-screenshots/houston-hurricane-risk.png)
+
+## Sponsor Hook (Microsoft & AMD)
+
+- **Production-Ready Architecture:** ClimateGuard is architected for Azure OpenAI (GPT-4o) in production, with Gemini used for development and demo purposes.
+- **Compute Optimization:** Leveraging **AMD EPYC™ performance** for low-latency geospatial data processing across massive federal datasets.
+- **Deployment Architecture:** Azure OpenAI for real-time climate advisories at scale, with AMD-optimized geospatial inference for sub-second risk scoring.
 
 ## Tech stack
 

@@ -4,6 +4,9 @@
 
 ClimateGuard converts complex climate data into one fast, household-level decision tool: enter an address, get a clear risk score, top hazards, and immediate actions.
 
+## Deployment Architecture
+**Azure OpenAI (GPT-4o)** for real-time climate advisories at scale, with **AMD-optimized geospatial inference** for sub-second risk scoring.
+
 ## Why This Idea Wins
 
 ### 1) Problem Urgency (High Impact)
@@ -18,17 +21,17 @@ ClimateGuard converts complex climate data into one fast, household-level decisi
 - Unified risk model combining flood, surge, wildfire, heat, and live alerts.
 - Converts risk insight into a prioritized action checklist, not just a score.
 
-### 3) Feasibility (Buildable Now)
+### 3) Sponsor Hook (Microsoft & AMD)
+
+- **Production-Ready Architecture:** ClimateGuard is architected for Azure OpenAI (GPT-4o) in production, with Gemini used for development and demo purposes.
+- **Compute Optimization:** Leveraging **AMD EPYC™ performance** for low-latency geospatial data processing across massive federal datasets.
+- **Scalability:** Designed to scale through Azure Kubernetes Service (AKS), processing millions of addresses with world-class speed and reliability.
+
+### 4) Feasibility (Buildable Now)
 
 - Uses existing public datasets and alert feeds; no speculative hardware needed.
 - Simple product loop: input -> risk synthesis -> action output.
 - Validation set already prepared across five high-risk US states.
-
-### 4) Scalability (From Demo to Deployment)
-
-- Geographic expansion is dataset-driven, not city-by-city custom builds.
-- Same framework can support households, renters, schools, and small businesses.
-- Future monetization paths: B2B resilience APIs, insurer partnerships, municipal deployments.
 
 ### 5) Social and Environmental Value
 
