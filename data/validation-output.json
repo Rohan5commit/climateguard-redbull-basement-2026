@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-03-22T10:04:56.907Z",
+  "generatedAt": "2026-03-22T10:08:52.476Z",
   "baseUrl": "http://localhost:3000",
   "summary": {
     "total": 15,
     "completedCount": 15,
     "completionRatePct": 100,
-    "dominantHazardMatchCount": 13,
-    "dominantHazardMatchRatePct": 86.67,
+    "dominantHazardMatchCount": 15,
+    "dominantHazardMatchRatePct": 100,
     "usableOutputsCount": 15,
     "usableOutputsRatePct": 100
   },
@@ -29,7 +29,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:27.536Z",
+      "generatedAt": "2026-03-22T10:08:52.422Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -75,7 +75,7 @@
       "activeAlertsCount": 0,
       "actionCount": 4,
       "confidence": "Medium",
-      "generatedAt": "2026-03-22T10:04:29.050Z",
+      "generatedAt": "2026-03-22T10:08:52.428Z",
       "dataSourceStates": [
         {
           "name": "OpenStreetMap Nominatim",
@@ -105,23 +105,23 @@
     },
     {
       "label": "CA-Heat-03",
-      "submittedAddress": "100 E Tahquitz Canyon Way, Palm Springs, CA 92262",
+      "submittedAddress": "1501 Truxtun Ave, Bakersfield, CA 93301",
       "expectedRiskProfile": "Extreme heat risk and dehydration potential",
       "expectedDominantHazard": "heat",
-      "score": 85,
-      "riskLevel": "Severe",
+      "score": 56,
+      "riskLevel": "Moderate",
       "breakdown": {
-        "flood": 10,
-        "wildfire": 10,
-        "heat": 6.1,
-        "severeWeather": 3.9
+        "flood": 8.6,
+        "wildfire": 1.1,
+        "heat": 9.4,
+        "severeWeather": 2.6
       },
-      "topHazard": "flood",
-      "expectedHazardMatched": false,
+      "topHazard": "heat",
+      "expectedHazardMatched": true,
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:30.639Z",
+      "generatedAt": "2026-03-22T10:08:52.432Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -167,7 +167,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:30.654Z",
+      "generatedAt": "2026-03-22T10:08:52.435Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -213,7 +213,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:33.731Z",
+      "generatedAt": "2026-03-22T10:08:52.437Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -259,7 +259,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:35.254Z",
+      "generatedAt": "2026-03-22T10:08:52.441Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -305,7 +305,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:35.267Z",
+      "generatedAt": "2026-03-22T10:08:52.445Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -351,7 +351,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:36.759Z",
+      "generatedAt": "2026-03-22T10:08:52.447Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -381,23 +381,23 @@
     },
     {
       "label": "TX-HeatDrought-09",
-      "submittedAddress": "1500 S Capital of Texas Hwy, Austin, TX 78746",
+      "submittedAddress": "1110 Houston St, Laredo, TX 78040",
       "expectedRiskProfile": "Extreme heat and drought stress risk",
       "expectedDominantHazard": "heat",
-      "score": 85,
-      "riskLevel": "Severe",
+      "score": 75,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 9.1,
-        "wildfire": 8.5,
-        "heat": 7.8,
-        "severeWeather": 8.9
+        "flood": 7.2,
+        "wildfire": 3.3,
+        "heat": 9.1,
+        "severeWeather": 8.2
       },
-      "topHazard": "flood",
-      "expectedHazardMatched": false,
+      "topHazard": "heat",
+      "expectedHazardMatched": true,
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:38.445Z",
+      "generatedAt": "2026-03-22T10:08:52.450Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -443,7 +443,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:40.336Z",
+      "generatedAt": "2026-03-22T10:08:52.456Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -489,7 +489,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:42.467Z",
+      "generatedAt": "2026-03-22T10:08:52.465Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -535,7 +535,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:51.510Z",
+      "generatedAt": "2026-03-22T10:08:52.468Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -581,7 +581,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:53.710Z",
+      "generatedAt": "2026-03-22T10:08:52.471Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -627,7 +627,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:55.272Z",
+      "generatedAt": "2026-03-22T10:08:52.473Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
@@ -673,7 +673,7 @@
       "activeAlertsCount": 0,
       "actionCount": 5,
       "confidence": "High",
-      "generatedAt": "2026-03-22T10:04:56.904Z",
+      "generatedAt": "2026-03-22T10:08:52.475Z",
       "dataSourceStates": [
         {
           "name": "U.S. Census Geocoder",
