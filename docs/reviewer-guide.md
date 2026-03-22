@@ -2,6 +2,8 @@
 
 ## Fastest Way To Check The Project
 
+Live deployment: `https://climateguard-redbull-basement-2026.vercel.app`
+
 ```bash
 npm install
 cp .env.example .env.local

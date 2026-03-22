@@ -1,5 +1,7 @@
 # ClimateGuard | Red Bull Basement 2026 MVP
 
+🌐 **Live Demo:** [climateguard-redbull-basement-2026.vercel.app](https://climateguard-redbull-basement-2026.vercel.app)
+
 ClimateGuard is a full-stack Next.js MVP for **Red Bull Basement 2026**.
 It turns one U.S. address into a plain-language **5-year climate-risk outlook** with hazard scores, active alerts, mitigation actions, and assistance links.
 
