@@ -85,7 +85,7 @@ GEMINI_MODEL=gemini-2.0-flash
 # Optional tertiary fallback
 NVIDIA_NIM_API_KEY=
 NVIDIA_NIM_BASE_URL=https://integrate.api.nvidia.com/v1
-NVIDIA_NIM_MODEL=meta/llama-3.3-70b-instruct
+NVIDIA_NIM_MODEL=meta/llama-3.1-8b-instruct
 ```
 
 You only need **one** working AI provider key for LLM-generated advisories.

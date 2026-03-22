@@ -475,6 +475,11 @@ function hazardLabel(hazard: HazardKey): string {
   }
 }
 
+function readEnv(name: string): string | undefined {
+  const trimmed = process.env[name]?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
 function toRiskLevel(score: number): RiskLevel {
   if (score >= 82) {
     return "Severe";
@@ -1442,15 +1447,15 @@ async function generateAdvisory(
   actions: string[],
   alerts: ActiveAlert[],
 ): Promise<AdvisoryResult> {
-  const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
-  const azureApiKey = process.env.AZURE_OPENAI_KEY;
-  const azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT ?? "gpt-4o";
-  const azureApiVersion = process.env.AZURE_OPENAI_API_VERSION ?? "2024-02-01";
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  const geminiModel = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
-  const nimApiKey = process.env.NVIDIA_NIM_API_KEY;
-  const nimBaseUrl = process.env.NVIDIA_NIM_BASE_URL ?? "https://integrate.api.nvidia.com/v1";
-  const nimModel = process.env.NVIDIA_NIM_MODEL ?? "meta/llama-3.3-70b-instruct";
+  const azureEndpoint = readEnv("AZURE_OPENAI_ENDPOINT");
+  const azureApiKey = readEnv("AZURE_OPENAI_KEY");
+  const azureDeployment = readEnv("AZURE_OPENAI_DEPLOYMENT") ?? "gpt-4o";
+  const azureApiVersion = readEnv("AZURE_OPENAI_API_VERSION") ?? "2024-02-01";
+  const geminiApiKey = readEnv("GEMINI_API_KEY");
+  const geminiModel = readEnv("GEMINI_MODEL") ?? "gemini-2.0-flash";
+  const nimApiKey = readEnv("NVIDIA_NIM_API_KEY");
+  const nimBaseUrl = readEnv("NVIDIA_NIM_BASE_URL") ?? "https://integrate.api.nvidia.com/v1";
+  const nimModel = readEnv("NVIDIA_NIM_MODEL") ?? "meta/llama-3.1-8b-instruct";
   const prompt = advisoryPrompt(location, score, riskLevel, breakdown, topHazard, actions, alerts);
   const cacheKey = JSON.stringify({
     location: location.resolvedAddress,
@@ -1460,6 +1465,11 @@ async function generateAdvisory(
     topHazard,
     actions,
     alerts,
+    providers: {
+      azure: Boolean(azureEndpoint && azureApiKey),
+      gemini: Boolean(geminiApiKey),
+      nim: Boolean(nimApiKey),
+    },
     azureDeployment,
     geminiModel,
     nimModel,
