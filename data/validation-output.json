@@ -1,216 +1,705 @@
 {
-  "generatedAt": "2026-03-02T09:25:30.432Z",
+  "generatedAt": "2026-03-22T10:04:56.907Z",
   "baseUrl": "http://localhost:3000",
+  "summary": {
+    "total": 15,
+    "completedCount": 15,
+    "completionRatePct": 100,
+    "dominantHazardMatchCount": 13,
+    "dominantHazardMatchRatePct": 86.67,
+    "usableOutputsCount": 15,
+    "usableOutputsRatePct": 100
+  },
   "results": [
     {
       "label": "CA-Coastal-01",
       "submittedAddress": "2100 Beach Blvd, Pacifica, CA 94044",
       "expectedRiskProfile": "Coastal flood and erosion exposure during storms",
-      "score": 9,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 55,
+      "riskLevel": "Moderate",
       "breakdown": {
-        "flood": 1.3,
-        "wildfire": 0.8,
-        "severeWeather": 0.2
+        "flood": 8.3,
+        "wildfire": 8.2,
+        "heat": 4.5,
+        "severeWeather": 1.3
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:18.470Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:27.536Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "CA-Wildfire-02",
       "submittedAddress": "1411 Clark Rd, Paradise, CA 95969",
       "expectedRiskProfile": "High wildfire exposure in WUI corridor",
-      "score": 20,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "wildfire",
+      "score": 62,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 0.8,
-        "wildfire": 4.3,
-        "severeWeather": 0.8
+        "flood": 4,
+        "wildfire": 10,
+        "heat": 5,
+        "severeWeather": 2
       },
+      "topHazard": "wildfire",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 4,
       "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:20.366Z"
+      "generatedAt": "2026-03-22T10:04:29.050Z",
+      "dataSourceStates": [
+        {
+          "name": "OpenStreetMap Nominatim",
+          "status": "fallback"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "CA-Heat-03",
       "submittedAddress": "100 E Tahquitz Canyon Way, Palm Springs, CA 92262",
       "expectedRiskProfile": "Extreme heat risk and dehydration potential",
-      "score": 20,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "heat",
+      "score": 85,
+      "riskLevel": "Severe",
       "breakdown": {
-        "flood": 0.8,
-        "wildfire": 4.7,
-        "severeWeather": 0.2
+        "flood": 10,
+        "wildfire": 10,
+        "heat": 6.1,
+        "severeWeather": 3.9
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:20.838Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": false,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:30.639Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "FL-Coastal-04",
       "submittedAddress": "1100 S Ocean Dr, Miami Beach, FL 33139",
       "expectedRiskProfile": "Storm surge and hurricane wind exposure",
-      "score": 9,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 79,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 2.1,
-        "wildfire": 0,
-        "severeWeather": 0.2
+        "flood": 10,
+        "wildfire": 3.2,
+        "heat": 7.4,
+        "severeWeather": 9.5
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:21.558Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:30.654Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "FL-LowElevation-05",
       "submittedAddress": "201 William St, Key West, FL 33040",
       "expectedRiskProfile": "Tidal flooding and hurricane surge risk",
-      "score": 9,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 76,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 2.1,
-        "wildfire": 0,
-        "severeWeather": 0.2
+        "flood": 10,
+        "wildfire": 3.8,
+        "heat": 3.9,
+        "severeWeather": 9.9
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:22.076Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:33.731Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "FL-GulfCoast-06",
       "submittedAddress": "1500 Estero Blvd, Fort Myers Beach, FL 33931",
       "expectedRiskProfile": "Hurricane surge and coastal flood exposure",
-      "score": 12,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 87,
+      "riskLevel": "Severe",
       "breakdown": {
-        "flood": 2.6,
-        "wildfire": 0.4,
-        "severeWeather": 0.2
+        "flood": 10,
+        "wildfire": 5.9,
+        "heat": 5.1,
+        "severeWeather": 9.9
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:22.594Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:35.254Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "TX-UrbanFlood-07",
       "submittedAddress": "1000 Bagby St, Houston, TX 77002",
       "expectedRiskProfile": "Urban flash flood and heat stress risk",
-      "score": 7,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 65,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 1.6,
-        "wildfire": 0,
-        "severeWeather": 0.2
+        "flood": 10,
+        "wildfire": 0.4,
+        "heat": 6.7,
+        "severeWeather": 9.9
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:23.315Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:35.267Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "TX-Coastal-08",
       "submittedAddress": "2100 Harborside Dr, Galveston, TX 77550",
       "expectedRiskProfile": "Storm surge and tropical cyclone risk",
-      "score": 4,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 90,
+      "riskLevel": "Severe",
       "breakdown": {
-        "flood": 0.8,
-        "wildfire": 0,
-        "severeWeather": 0.2
+        "flood": 9.9,
+        "wildfire": 8.1,
+        "heat": 8.6,
+        "severeWeather": 9.8
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:24.160Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:36.759Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "TX-HeatDrought-09",
       "submittedAddress": "1500 S Capital of Texas Hwy, Austin, TX 78746",
       "expectedRiskProfile": "Extreme heat and drought stress risk",
-      "score": 5,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "heat",
+      "score": 85,
+      "riskLevel": "Severe",
       "breakdown": {
-        "flood": 1,
-        "wildfire": 0,
-        "severeWeather": 0.4
+        "flood": 9.1,
+        "wildfire": 8.5,
+        "heat": 7.8,
+        "severeWeather": 8.9
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:24.876Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": false,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:38.445Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "LA-DeltaFlood-10",
       "submittedAddress": "1600 Pauger St, New Orleans, LA 70117",
       "expectedRiskProfile": "Riverine and coastal flood risk",
-      "score": 13,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 61,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 2.9,
-        "wildfire": 0,
-        "severeWeather": 0.6
+        "flood": 9.6,
+        "wildfire": 0.2,
+        "heat": 6.7,
+        "severeWeather": 9.8
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:25.803Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:40.336Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "LA-Hurricane-11",
       "submittedAddress": "1001 Ryan St, Lake Charles, LA 70601",
       "expectedRiskProfile": "Hurricane wind and flood recurrence risk",
-      "score": 13,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 64,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 3.1,
-        "wildfire": 0,
-        "severeWeather": 0.4
+        "flood": 10,
+        "wildfire": 0.5,
+        "heat": 5.6,
+        "severeWeather": 9.8
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:26.992Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:42.467Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "LA-InlandFlood-12",
       "submittedAddress": "660 N Foster Dr, Baton Rouge, LA 70806",
       "expectedRiskProfile": "Flash flood and heat stress risk",
-      "score": 15,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 84,
+      "riskLevel": "Severe",
       "breakdown": {
-        "flood": 3.4,
-        "wildfire": 0,
-        "severeWeather": 0.4
+        "flood": 10,
+        "wildfire": 4.4,
+        "heat": 8.9,
+        "severeWeather": 9.9
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:27.344Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:51.510Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "NY-Coastal-13",
       "submittedAddress": "1 W Broadway, Long Beach, NY 11561",
       "expectedRiskProfile": "Coastal storm surge and flood risk",
-      "score": 5,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 55,
+      "riskLevel": "Moderate",
       "breakdown": {
-        "flood": 1.3,
-        "wildfire": 0,
-        "severeWeather": 0
+        "flood": 9.9,
+        "wildfire": 0.2,
+        "heat": 6.8,
+        "severeWeather": 8.2
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:27.765Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:53.710Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "NY-Surge-14",
       "submittedAddress": "200 Father Capodanno Blvd, Staten Island, NY 10305",
       "expectedRiskProfile": "Storm surge and heavy rain flooding risk",
-      "score": 50,
-      "riskLevel": "Moderate",
+      "expectedDominantHazard": "flood",
+      "score": 58,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 7.8,
-        "wildfire": 0.4,
-        "severeWeather": 7
+        "flood": 9,
+        "wildfire": 0.2,
+        "heat": 9.2,
+        "severeWeather": 7.2
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:28.113Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:55.272Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     },
     {
       "label": "NY-Rockaway-15",
       "submittedAddress": "108-20 Rockaway Beach Dr, Rockaway Park, NY 11694",
       "expectedRiskProfile": "Coastal flooding and wind exposure",
-      "score": 4,
-      "riskLevel": "Low",
+      "expectedDominantHazard": "flood",
+      "score": 70,
+      "riskLevel": "High",
       "breakdown": {
-        "flood": 1,
-        "wildfire": 0,
-        "severeWeather": 0
+        "flood": 9.8,
+        "wildfire": 0.1,
+        "heat": 9.4,
+        "severeWeather": 8.4
       },
-      "confidence": "Medium",
-      "generatedAt": "2026-03-02T09:25:30.429Z"
+      "topHazard": "flood",
+      "expectedHazardMatched": true,
+      "activeAlertsCount": 0,
+      "actionCount": 5,
+      "confidence": "High",
+      "generatedAt": "2026-03-22T10:04:56.904Z",
+      "dataSourceStates": [
+        {
+          "name": "U.S. Census Geocoder",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (Census tract)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA National Risk Index (County)",
+          "status": "live"
+        },
+        {
+          "name": "FEMA Disaster Declarations",
+          "status": "live"
+        },
+        {
+          "name": "NOAA/NWS Active Alerts",
+          "status": "live"
+        },
+        {
+          "name": "AI Advisory",
+          "status": "fallback"
+        }
+      ]
     }
   ]
 }

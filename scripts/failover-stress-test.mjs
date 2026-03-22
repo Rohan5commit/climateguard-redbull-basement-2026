@@ -1,10 +1,12 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
+import { ensureLocalAppServer } from "./lib/server-bootstrap.mjs";
 
 const BASE_URL = process.env.CLIMATEGUARD_BASE_URL ?? "http://localhost:3000";
 const INPUT_CSV = resolve("data/test-addresses.csv");
 const OUTPUT_JSON = resolve("data/failover-stress-results.json");
+const OUTPUT_MD = resolve("docs/failover-stress-report.md");
 const DURATION_SEC = Number(process.env.FAILOVER_STRESS_DURATION_SEC ?? "300");
 const CONCURRENCY = Number(process.env.FAILOVER_STRESS_CONCURRENCY ?? "12");
 const TIMEOUT_MS = Number(process.env.FAILOVER_STRESS_TIMEOUT_MS ?? "35000");
@@ -91,85 +93,147 @@ function percentile(values, p) {
   return sorted[index];
 }
 
+function buildMarkdownReport(result) {
+  const advisoryLines =
+    Object.keys(result.sourceCounts).length === 0 ||
+    (Object.keys(result.sourceCounts).length === 1 && result.sourceCounts["AI Advisory"])
+      ? [
+          `- Deterministic advisory fallback: ${result.sourceCounts["AI Advisory"] ?? result.total}`,
+          "- No external AI provider key was active in this run.",
+        ]
+      : Object.entries(result.sourceCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([source, count]) => `- ${source}: ${count}`);
+
+  const errorLines =
+    result.topErrors.length === 0
+      ? ["- None"]
+      : result.topErrors.map((item) => `- ${item.error}: ${item.count}`);
+
+  return [
+    "# ClimateGuard Failover Stress Report",
+    "",
+    `Generated: ${result.generatedAt}`,
+    `Base URL: ${result.baseUrl}`,
+    "",
+    "## Configuration",
+    "",
+    `- Duration: ${result.durationSec} seconds`,
+    `- Concurrency: ${result.concurrency}`,
+    `- Timeout: ${result.timeoutMs} ms`,
+    `- Endpoint: /api/risk`,
+    "",
+    "## Results",
+    "",
+    `- Total requests: ${result.total}`,
+    `- Success rate: ${result.successRate}%`,
+    `- Failure count: ${result.failCount}`,
+    `- Latency avg/p95/p99: ${result.latencyMs.avg} / ${result.latencyMs.p95} / ${result.latencyMs.p99} ms`,
+    "",
+    "## Advisory Sources",
+    "",
+    ...advisoryLines,
+    "",
+    "## Error Hotspots",
+    "",
+    ...errorLines,
+  ].join("\n");
+}
+
 async function main() {
-  const rows = parseCsv(await readFile(INPUT_CSV, "utf8"));
+  const server = await ensureLocalAppServer(BASE_URL);
 
-  const endAt = Date.now() + DURATION_SEC * 1000;
-  const records = [];
+  try {
+    const rows = parseCsv(await readFile(INPUT_CSV, "utf8"));
 
-  async function worker() {
-    while (Date.now() < endAt) {
-      const address = randomAddress(rows);
-      records.push(await sendRiskRequest(address));
+    const endAt = Date.now() + DURATION_SEC * 1000;
+    const records = [];
+
+    async function worker() {
+      while (Date.now() < endAt) {
+        const address = randomAddress(rows);
+        records.push(await sendRiskRequest(address));
+      }
     }
+
+    await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+
+    const total = records.length;
+    const okCount = records.filter((record) => record.ok).length;
+    const failCount = total - okCount;
+    const latency = records.map((record) => record.elapsedMs);
+
+    const sourceCounts = {};
+    const statusCounts = {};
+    const errorCounts = {};
+
+    for (const record of records) {
+      const statusKey = String(record.status);
+      statusCounts[statusKey] = (statusCounts[statusKey] ?? 0) + 1;
+
+      if (record.advisorySourceName) {
+        sourceCounts[record.advisorySourceName] =
+          (sourceCounts[record.advisorySourceName] ?? 0) + 1;
+      }
+
+      if (record.error) {
+        errorCounts[record.error] = (errorCounts[record.error] ?? 0) + 1;
+      }
+    }
+
+    const nimCount = sourceCounts["NVIDIA NIM Advisory"] ?? 0;
+    const nimShare = okCount > 0 ? Number(((nimCount / okCount) * 100).toFixed(2)) : 0;
+    const maxLatency = latency.reduce(
+      (currentMax, value) => (value > currentMax ? value : currentMax),
+      0,
+    );
+
+    const result = {
+      generatedAt: new Date().toISOString(),
+      baseUrl: BASE_URL,
+      durationSec: DURATION_SEC,
+      concurrency: CONCURRENCY,
+      timeoutMs: TIMEOUT_MS,
+      total,
+      okCount,
+      failCount,
+      successRate: total > 0 ? Number(((okCount / total) * 100).toFixed(4)) : 0,
+      nimSharePercentAmongSuccesses: nimShare,
+      latencyMs: {
+        avg:
+          latency.length > 0
+            ? Number((latency.reduce((sum, value) => sum + value, 0) / latency.length).toFixed(2))
+            : 0,
+        p95: Number(percentile(latency, 95).toFixed(2)),
+        p99: Number(percentile(latency, 99).toFixed(2)),
+        max: Number(maxLatency.toFixed(2)),
+      },
+      statusCounts,
+      sourceCounts,
+      topErrors: Object.entries(errorCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([error, count]) => ({ error, count })),
+    };
+
+    await mkdir(resolve("docs"), { recursive: true });
+    await writeFile(OUTPUT_JSON, JSON.stringify(result, null, 2), "utf8");
+    await writeFile(OUTPUT_MD, buildMarkdownReport(result), "utf8");
+
+    process.stdout.write(`Failover stress JSON report: ${OUTPUT_JSON}\n`);
+    process.stdout.write(`Failover stress markdown report: ${OUTPUT_MD}\n`);
+    process.stdout.write(
+      JSON.stringify({
+        total: result.total,
+        successRate: result.successRate,
+        nimSharePercentAmongSuccesses: result.nimSharePercentAmongSuccesses,
+        p95: result.latencyMs.p95,
+        p99: result.latencyMs.p99,
+      }) + "\n",
+    );
+  } finally {
+    await server?.stop();
   }
-
-  await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
-
-  const total = records.length;
-  const okCount = records.filter((record) => record.ok).length;
-  const failCount = total - okCount;
-  const latency = records.map((record) => record.elapsedMs);
-
-  const sourceCounts = {};
-  const statusCounts = {};
-  const errorCounts = {};
-
-  for (const record of records) {
-    const statusKey = String(record.status);
-    statusCounts[statusKey] = (statusCounts[statusKey] ?? 0) + 1;
-
-    if (record.advisorySourceName) {
-      sourceCounts[record.advisorySourceName] = (sourceCounts[record.advisorySourceName] ?? 0) + 1;
-    }
-
-    if (record.error) {
-      errorCounts[record.error] = (errorCounts[record.error] ?? 0) + 1;
-    }
-  }
-
-  const nimCount = sourceCounts["NVIDIA NIM Advisory"] ?? 0;
-  const nimShare = okCount > 0 ? Number(((nimCount / okCount) * 100).toFixed(2)) : 0;
-  const maxLatency = latency.reduce(
-    (currentMax, value) => (value > currentMax ? value : currentMax),
-    0,
-  );
-
-  const result = {
-    generatedAt: new Date().toISOString(),
-    baseUrl: BASE_URL,
-    durationSec: DURATION_SEC,
-    concurrency: CONCURRENCY,
-    timeoutMs: TIMEOUT_MS,
-    total,
-    okCount,
-    failCount,
-    successRate: total > 0 ? Number(((okCount / total) * 100).toFixed(4)) : 0,
-    nimSharePercentAmongSuccesses: nimShare,
-    latencyMs: {
-      avg: latency.length > 0 ? Number((latency.reduce((sum, value) => sum + value, 0) / latency.length).toFixed(2)) : 0,
-      p95: Number(percentile(latency, 95).toFixed(2)),
-      p99: Number(percentile(latency, 99).toFixed(2)),
-      max: Number(maxLatency.toFixed(2)),
-    },
-    statusCounts,
-    sourceCounts,
-    topErrors: Object.entries(errorCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([error, count]) => ({ error, count })),
-  };
-
-  await writeFile(OUTPUT_JSON, JSON.stringify(result, null, 2), "utf8");
-
-  process.stdout.write(`Failover stress JSON report: ${OUTPUT_JSON}\n`);
-  process.stdout.write(JSON.stringify({
-    total: result.total,
-    successRate: result.successRate,
-    nimSharePercentAmongSuccesses: result.nimSharePercentAmongSuccesses,
-    p95: result.latencyMs.p95,
-    p99: result.latencyMs.p99,
-  }) + "\n");
 }
 
 main().catch((error) => {

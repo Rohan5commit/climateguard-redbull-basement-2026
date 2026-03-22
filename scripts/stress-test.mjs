@@ -1,42 +1,76 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
+import { ensureLocalAppServer } from "./lib/server-bootstrap.mjs";
 
 const BASE_URL = process.env.CLIMATEGUARD_BASE_URL ?? "http://localhost:3000";
 const INPUT_CSV = resolve("data/test-addresses.csv");
 const OUTPUT_JSON = resolve("data/stress-test-results.json");
 const OUTPUT_MD = resolve("docs/stress-test-report.md");
+const STRESS_PROFILE = process.env.CLIMATEGUARD_STRESS_PROFILE ?? "full";
 
-const SCENARIOS = [
-  {
-    id: "warmup",
-    description: "Warmup and initial correctness scan",
-    requests: 80,
-    concurrency: 4,
-    timeoutMs: 30000,
-  },
-  {
-    id: "load-medium",
-    description: "Medium sustained concurrent load",
-    requests: 500,
-    concurrency: 10,
-    timeoutMs: 30000,
-  },
-  {
-    id: "load-high",
-    description: "High load burst",
-    requests: 1200,
-    concurrency: 25,
-    timeoutMs: 35000,
-  },
-  {
-    id: "soak-12m",
-    description: "Long soak run for stability under continuous pressure",
-    durationSec: 720,
-    concurrency: 12,
-    timeoutMs: 35000,
-  },
-];
+const SCENARIOS =
+  STRESS_PROFILE === "smoke"
+    ? [
+        {
+          id: "warmup",
+          description: "Warmup and initial correctness scan",
+          requests: 12,
+          concurrency: 2,
+          timeoutMs: 30000,
+        },
+        {
+          id: "load-medium",
+          description: "Short concurrent burst for smoke verification",
+          requests: 24,
+          concurrency: 4,
+          timeoutMs: 30000,
+        },
+        {
+          id: "load-high",
+          description: "Higher-concurrency smoke burst",
+          requests: 36,
+          concurrency: 6,
+          timeoutMs: 35000,
+        },
+        {
+          id: "soak-20s",
+          description: "Short soak run for packaging verification",
+          durationSec: 20,
+          concurrency: 4,
+          timeoutMs: 35000,
+        },
+      ]
+    : [
+        {
+          id: "warmup",
+          description: "Warmup and initial correctness scan",
+          requests: 80,
+          concurrency: 4,
+          timeoutMs: 30000,
+        },
+        {
+          id: "load-medium",
+          description: "Medium sustained concurrent load",
+          requests: 500,
+          concurrency: 10,
+          timeoutMs: 30000,
+        },
+        {
+          id: "load-high",
+          description: "High load burst",
+          requests: 1200,
+          concurrency: 25,
+          timeoutMs: 35000,
+        },
+        {
+          id: "soak-12m",
+          description: "Long soak run for stability under continuous pressure",
+          durationSec: 720,
+          concurrency: 12,
+          timeoutMs: 35000,
+        },
+      ];
 
 function parseCsv(csvText) {
   const [headerLine, ...rowLines] = csvText.trim().split(/\r?\n/);
@@ -141,15 +175,23 @@ function validatePayload(payload) {
   if (!payload.breakdown || typeof payload.breakdown !== "object") {
     issues.push("missing_breakdown");
   } else {
-    for (const key of ["flood", "wildfire", "severeWeather"]) {
+    for (const key of ["flood", "wildfire", "heat", "severeWeather"]) {
       if (typeof payload.breakdown[key] !== "number") {
         issues.push(`invalid_breakdown_${key}`);
       }
     }
   }
 
+  if (!["flood", "wildfire", "heat", "severeWeather"].includes(payload.topHazard)) {
+    issues.push("missing_or_invalid_topHazard");
+  }
+
   if (!Array.isArray(payload.actions) || payload.actions.length === 0) {
     issues.push("missing_actions");
+  }
+
+  if (!Array.isArray(payload.activeAlerts)) {
+    issues.push("missing_activeAlerts");
   }
 
   if (!Array.isArray(payload.dataSources) || payload.dataSources.length === 0) {
@@ -337,6 +379,7 @@ function buildMarkdownReport({ generatedAt, baseUrl, aggregate, scenarios }) {
   lines.push("");
   lines.push(`Generated: ${generatedAt}`);
   lines.push(`Base URL: ${baseUrl}`);
+  lines.push(`Profile: ${STRESS_PROFILE}`);
   lines.push("");
   lines.push("## Aggregate Summary");
   lines.push("");
@@ -395,7 +438,10 @@ function buildMarkdownReport({ generatedAt, baseUrl, aggregate, scenarios }) {
   lines.push("");
   lines.push("## Notes");
   lines.push("");
-  lines.push("- This test uses live external dependencies (OSM/FEMA/NOAA + AI providers). Results include real network effects.");
+  lines.push("- This test uses live external dependencies (Census/FEMA/NOAA plus any configured AI providers). Results include real network effects.");
+  if (Object.keys(advisoryCounts).length === 1 && advisoryCounts["AI Advisory"]) {
+    lines.push("- No external AI key was active in this run, so deterministic advisory templates handled responses.");
+  }
   lines.push("- Zero 5xx and high schema-valid rates are the primary release gate for competition demo reliability.");
 
   return lines.join("\n");
@@ -424,54 +470,59 @@ function aggregateScenarios(summaries) {
 }
 
 async function main() {
+  const server = await ensureLocalAppServer(BASE_URL);
   const csvText = await readFile(INPUT_CSV, "utf8");
   const addressRows = parseCsv(csvText);
 
-  if (addressRows.length === 0) {
-    throw new Error("No addresses available for stress test.");
-  }
+  try {
+    if (addressRows.length === 0) {
+      throw new Error("No addresses available for stress test.");
+    }
 
-  const summaries = [];
+    const summaries = [];
 
-  for (const scenario of SCENARIOS) {
-    const summary = await runScenario({
+    for (const scenario of SCENARIOS) {
+      const summary = await runScenario({
+        baseUrl: BASE_URL,
+        scenario,
+        addressRows,
+      });
+      summaries.push(summary);
+      process.stdout.write(
+        `[${scenario.id}] requests=${summary.requests} successRate=${summary.successRate}% p95=${summary.latencyMs.p95}ms\n`,
+      );
+    }
+
+    const generatedAt = new Date().toISOString();
+    const aggregate = aggregateScenarios(summaries);
+
+    const payload = {
+      generatedAt,
       baseUrl: BASE_URL,
-      scenario,
-      addressRows,
+      scenarios: summaries.map((summary) => ({
+        ...summary,
+        latenciesMsRaw: undefined,
+      })),
+      aggregate,
+    };
+
+    await mkdir(resolve("data"), { recursive: true });
+    await mkdir(resolve("docs"), { recursive: true });
+    await writeFile(OUTPUT_JSON, JSON.stringify(payload, null, 2), "utf8");
+
+    const report = buildMarkdownReport({
+      generatedAt,
+      baseUrl: BASE_URL,
+      aggregate,
+      scenarios: summaries,
     });
-    summaries.push(summary);
-    process.stdout.write(
-      `[${scenario.id}] requests=${summary.requests} successRate=${summary.successRate}% p95=${summary.latencyMs.p95}ms\n`,
-    );
+    await writeFile(OUTPUT_MD, report, "utf8");
+
+    process.stdout.write(`Stress JSON report: ${OUTPUT_JSON}\n`);
+    process.stdout.write(`Stress markdown report: ${OUTPUT_MD}\n`);
+  } finally {
+    await server?.stop();
   }
-
-  const generatedAt = new Date().toISOString();
-  const aggregate = aggregateScenarios(summaries);
-
-  const payload = {
-    generatedAt,
-    baseUrl: BASE_URL,
-    scenarios: summaries.map((summary) => ({
-      ...summary,
-      latenciesMsRaw: undefined,
-    })),
-    aggregate,
-  };
-
-  await mkdir(resolve("data"), { recursive: true });
-  await mkdir(resolve("docs"), { recursive: true });
-  await writeFile(OUTPUT_JSON, JSON.stringify(payload, null, 2), "utf8");
-
-  const report = buildMarkdownReport({
-    generatedAt,
-    baseUrl: BASE_URL,
-    aggregate,
-    scenarios: summaries,
-  });
-  await writeFile(OUTPUT_MD, report, "utf8");
-
-  process.stdout.write(`Stress JSON report: ${OUTPUT_JSON}\n`);
-  process.stdout.write(`Stress markdown report: ${OUTPUT_MD}\n`);
 }
 
 main().catch((error) => {

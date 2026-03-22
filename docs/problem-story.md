@@ -1,5 +1,3 @@
 # The Moment ClimateGuard Was Born
 
-I started ClimateGuard after **Hurricane Ian in September 2022**, when my aunt in **Fort Myers** had only **4 hours** to decide whether to evacuate from **2314 McGregor Blvd**. 
-
-She had three different weather apps showing conflicting flood zones, and none could tell her if her specific street would flood. That dangerous gap between regional alerts and household-level decisions is why ClimateGuard exists. We provide the precise, property-level risk visibility families need to make life-saving decisions before it's too late.
+In the hours before Hurricane Ian reached Fort Myers in September 2022, my aunt had to decide whether to leave home without any tool that translated regional warnings into a household-level decision. Every app showed weather, but none combined flood, wind, heat, and local vulnerability into one clear answer for her street. ClimateGuard exists to turn that moment of confusion into a fast risk score, practical actions, and a path to help before disaster hits.

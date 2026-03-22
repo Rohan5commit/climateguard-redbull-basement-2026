@@ -8,11 +8,26 @@ import type { RiskResponse } from "@/lib/types";
 import styles from "./page.module.css";
 
 const SAMPLE_ADDRESSES = [
-  "33101",
-  "95969",
-  "77002",
-  "70112",
-  "11201",
+  {
+    label: "Miami Beach",
+    value: "1100 S Ocean Dr, Miami Beach, FL 33139",
+  },
+  {
+    label: "Paradise",
+    value: "1411 Clark Rd, Paradise, CA 95969",
+  },
+  {
+    label: "Houston",
+    value: "1000 Bagby St, Houston, TX 77002",
+  },
+  {
+    label: "Galveston",
+    value: "2100 Harborside Dr, Galveston, TX 77550",
+  },
+  {
+    label: "Palm Springs",
+    value: "100 E Tahquitz Canyon Way, Palm Springs, CA 92262",
+  },
 ];
 
 const RISK_COLORS: Record<RiskResponse["riskLevel"], string> = {
@@ -26,6 +41,13 @@ const SOURCE_BADGE_LABEL: Record<string, string> = {
   live: "Live",
   fallback: "Fallback",
   unavailable: "Unavailable",
+};
+
+const HAZARD_LABELS: Record<RiskResponse["topHazard"], string> = {
+  flood: "Flood",
+  wildfire: "Wildfire",
+  heat: "Heat",
+  severeWeather: "Severe Weather",
 };
 
 export default function Home() {
@@ -88,8 +110,9 @@ export default function Home() {
           <p className={styles.kicker}>Red Bull Basement 2026 MVP</p>
           <h1>ClimateGuard</h1>
           <p className={styles.heroText}>
-            Hyperlocal AI risk advisor for renters and homeowners. Enter any U.S. address to get a
-            five-year climate-risk outlook before insurer disruption hits.
+            Household climate-risk advisor for renters and homeowners. Enter any U.S. address to
+            get a five-year outlook grounded in Census geographies, FEMA National Risk Index data,
+            NOAA alerts, and plain-language action steps.
           </p>
         </section>
 
@@ -115,12 +138,12 @@ export default function Home() {
             <div className={styles.sampleRow}>
               {SAMPLE_ADDRESSES.map((sampleAddress) => (
                 <button
-                  key={sampleAddress}
+                  key={sampleAddress.value}
                   type="button"
                   className={styles.sampleButton}
-                  onClick={() => setAddress(sampleAddress)}
+                  onClick={() => setAddress(sampleAddress.value)}
                 >
-                  {sampleAddress}
+                  {sampleAddress.label}
                 </button>
               ))}
             </div>
@@ -152,6 +175,7 @@ export default function Home() {
                 </div>
                 <div>
                   <p className={styles.riskPill}>{result.riskLevel} Risk</p>
+                  <p className={styles.topHazard}>Top hazard: {HAZARD_LABELS[result.topHazard]}</p>
                   <ul className={styles.metricList}>
                     <li>
                       <span>Flood</span>
@@ -160,6 +184,10 @@ export default function Home() {
                     <li>
                       <span>Wildfire</span>
                       <strong>{result.breakdown.wildfire}/10</strong>
+                    </li>
+                    <li>
+                      <span>Heat</span>
+                      <strong>{result.breakdown.heat}/10</strong>
                     </li>
                     <li>
                       <span>Severe weather</span>
@@ -189,6 +217,21 @@ export default function Home() {
                   <li key={action}>{action}</li>
                 ))}
               </ol>
+
+              <h3>Active alerts</h3>
+              {result.activeAlerts.length > 0 ? (
+                <ul className={styles.alertList}>
+                  {result.activeAlerts.map((alert) => (
+                    <li key={`${alert.event}-${alert.headline}`}>
+                      <strong>{alert.event}</strong>
+                      <span>{alert.severity}</span>
+                      <p>{alert.headline}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className={styles.alertFallback}>No active NOAA alerts at this moment.</p>
+              )}
             </article>
 
             <article className={styles.programsCard}>

@@ -1,30 +1,40 @@
-# ClimateGuard - Red Bull Basement 2026 MVP
+# ClimateGuard | Red Bull Basement 2026 MVP
 
 ClimateGuard is a full-stack Next.js MVP for **Red Bull Basement 2026**.
-It gives homeowners and renters a plain-language **5-year climate risk outlook** from a single U.S. address.
+It turns one U.S. address into a plain-language **5-year climate-risk outlook** with hazard scores, active alerts, mitigation actions, and assistance links.
 
-**"ClimateGuard is architected for Azure OpenAI (GPT-4o) in production, with Gemini used for development and demo purposes due to Azure credit constraints during MVP phase."**
+**Production path:** Azure OpenAI (`gpt-4o`)  
+**Demo fallback:** Gemini  
+**Tertiary fallback:** NVIDIA NIM
 
 ## Why this project is competition-ready
 
-- Solves a high-stakes household problem: climate risk is hard to interpret quickly.
-- Uses AI to translate risk data into concise action guidance.
-- Is easy to explain and demo in 60 seconds.
-- Produces measurable outputs: risk score, hazard breakdown, actions, and source confidence.
+- Solves a real household problem: climate risk usually becomes obvious only when insurance gets harder or disaster is already near.
+- Uses public U.S. data sources that are easy to explain in a one-minute demo.
+- Translates raw risk inputs into an actionable checklist instead of a dashboard.
+- Ships with a validation set, screenshots, pitch docs, and demo runbook.
 
-## MVP capabilities
+## What the MVP does
 
-- Address/ZIP input and hyperlocal geocoding.
-- Composite risk scoring (0-100) with hazard breakdown:
+- Address-first workflow for renters and homeowners.
+- Geocodes to U.S. Census tract and county where possible.
+- Computes a composite 5-year score from:
   - Flood
   - Wildfire
+  - Heat
   - Severe weather
-- AI advisory generation:
-  - Primary: Gemini
-  - Backup (optional): NVIDIA NIM
-- Assistance program links (federal + selected state resources).
-- Data-source transparency (`live`, `fallback`, `unavailable`).
-- Validation package with 15 high-risk U.S. addresses.
+- Shows active NOAA/NWS alerts near the address.
+- Generates a plain-English advisory with prioritized actions.
+- Links users to federal and state assistance programs.
+- Exposes source status for every data provider used in the response.
+
+## Data sources used now
+
+- U.S. Census Geocoder
+- OpenStreetMap Nominatim
+- FEMA National Risk Index
+- FEMA OpenFEMA disaster declarations
+- NOAA / National Weather Service active alerts
 
 ## Demo Outputs
 
@@ -32,24 +42,18 @@ It gives homeowners and renters a plain-language **5-year climate risk outlook**
 ![Paradise Wildfire Risk](docs/demo-screenshots/paradise-wildfire-risk.png)
 ![Houston Hurricane Risk](docs/demo-screenshots/houston-hurricane-risk.png)
 
-## Sponsor Hook (Microsoft & AMD)
+## Sponsor Hook
 
-- **Production-Ready Architecture:** ClimateGuard is architected for Azure OpenAI (GPT-4o) in production, with Gemini used for development and demo purposes.
-- **Compute Optimization:** Leveraging **AMD EPYC™ performance** for low-latency geospatial data processing across massive federal datasets.
-- **Deployment Architecture:** Azure OpenAI for real-time climate advisories at scale, with AMD-optimized geospatial inference for sub-second risk scoring.
+- **Azure path:** ClimateGuard is wired for Azure OpenAI in production and can fall back to Gemini or NVIDIA NIM for demo resilience.
+- **Compute angle:** The scoring path is built around fast tract and county hazard lookups that can scale on AMD-backed cloud infrastructure.
+- **Judging angle:** The app is easy to demo live because one request returns a score, top hazard, active alerts, actions, and assistance links.
 
 ## Tech stack
 
 - Next.js 16 (App Router, TypeScript)
 - React 19
-- Gemini API integration for advisory output
-- `zod` for API input validation
-
-## Free data sources used
-
-- OSM Nominatim (OpenStreetMap geocoding)
-- FEMA OpenFEMA datasets
-- NOAA/NWS alerts
+- `zod` for API validation
+- Native `fetch` for federal data and AI provider calls
 
 ## Quick start
 
@@ -59,25 +63,31 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open: `http://localhost:3000`
+Open `http://localhost:3000`
 
 ## Environment variables
 
-Set this in `.env.local`:
+Set these in `.env.local`:
 
 ```bash
+# Primary production path
+AZURE_OPENAI_ENDPOINT=
+AZURE_OPENAI_KEY=
+AZURE_OPENAI_DEPLOYMENT=gpt-4o
+AZURE_OPENAI_API_VERSION=2024-02-01
+
+# Demo fallback
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-2.0-flash
 
-# Optional backup if Gemini is unavailable
+# Optional tertiary fallback
 NVIDIA_NIM_API_KEY=
 NVIDIA_NIM_BASE_URL=https://integrate.api.nvidia.com/v1
 NVIDIA_NIM_MODEL=meta/llama-3.3-70b-instruct
 ```
 
-`GEMINI_API_KEY` is the only required key. Data retrieval uses free public sources.
-`NVIDIA_NIM_API_KEY` is optional and used only as advisory fallback.
-Default fallback model is `meta/llama-3.3-70b-instruct` based on the benchmark in `docs/nim-model-benchmark.md`.
+You only need **one** working AI provider key for LLM-generated advisories.
+If no key is configured, ClimateGuard still works and falls back to a deterministic advisory template.
 
 ## API
 
@@ -95,28 +105,31 @@ Response includes:
 
 - `fiveYearRiskScore` (0-100)
 - `riskLevel` (`Low|Moderate|High|Severe`)
-- `breakdown` (flood/wildfire/severeWeather)
+- `breakdown` (`flood`, `wildfire`, `heat`, `severeWeather`)
+- `topHazard`
+- `activeAlerts`
 - `advisory`
-- `actions` (prioritized mitigation steps)
+- `actions`
 - `assistancePrograms`
 - `dataSources`
 
 ## Validation workflow
 
-1. Run the app (`npm run dev`)
-2. Run:
+Run:
 
 ```bash
 npm run validate:addresses
 ```
 
-This reads `data/test-addresses.csv` and writes `data/validation-output.json`.
+The script will start a local app instance if needed, then read `data/test-addresses.csv` and write `data/validation-output.json` with completion, dominant-hazard match rate, and per-address outputs.
 
-## Submission assets included
+## Submission assets
 
 - `docs/pitch-script.md`
 - `docs/problem-story.md`
 - `docs/judges-one-pager.md`
+- `docs/reviewer-guide.md`
+- `docs/submission-copy.md`
 - `docs/validation-plan.md`
 - `docs/demo-runbook.md`
 - `data/test-addresses.csv`
@@ -126,38 +139,35 @@ This reads `data/test-addresses.csv` and writes `data/validation-output.json`.
 ```bash
 npm run lint
 npm run build
+npm run reviewer:check
+npm run screenshots
 ```
 
 ## Stress testing
 
-Run long load tests against a running app instance:
+Run the reproducible smoke profile:
 
 ```bash
-npm run stress
+CLIMATEGUARD_STRESS_PROFILE=smoke npm run stress
 ```
 
-Run failover-only load test (Gemini disabled, NIM expected):
+Run failover smoke test:
 
 ```bash
-npm run stress:failover
+FAILOVER_STRESS_DURATION_SEC=15 FAILOVER_STRESS_CONCURRENCY=4 npm run stress:failover
 ```
-
-Latest reports are saved to:
-
-- `data/stress-test-results.json`
-- `docs/stress-test-report.md`
-- `data/failover-stress-results.json`
-- `docs/failover-stress-report.md`
 
 ## Deploy
 
 Recommended: Vercel
 
 1. Import this repo into Vercel.
-2. Add `GEMINI_API_KEY` (and optionally `NVIDIA_NIM_API_KEY`) in project settings.
+2. Add an Azure OpenAI, Gemini, or NVIDIA NIM secret if you want model-generated advisories in production.
 3. Deploy.
+
+Without an AI secret, the deployed app still returns deterministic advisory text.
 
 ## Notes
 
-- ClimateGuard is documented here as a strict free-data stack: OSM Nominatim + FEMA OpenFEMA + NOAA/NWS alerts.
-- This MVP is for early warning and action planning, not legal/insurance underwriting decisions.
+- ClimateGuard is a decision-support MVP, not a legal or underwriting system.
+- The current model intentionally prioritizes explainable public data over proprietary insurance datasets.

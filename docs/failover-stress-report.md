@@ -1,24 +1,27 @@
 # ClimateGuard Failover Stress Report
 
-Generated from `data/failover-stress-results.json` with Gemini intentionally disabled so NVIDIA NIM is the active secondary path.
+Generated: 2026-03-22T09:55:13.673Z
+Base URL: http://localhost:3000
 
 ## Configuration
 
-- Duration: 300 seconds
-- Concurrency: 12
-- Endpoint: `/api/risk`
-- Input set: randomized addresses from `data/test-addresses.csv`
+- Duration: 15 seconds
+- Concurrency: 4
+- Timeout: 35000 ms
+- Endpoint: /api/risk
 
 ## Results
 
-- Total requests: 753757
+- Total requests: 5573
 - Success rate: 100%
 - Failure count: 0
-- NVIDIA NIM advisory share (among successful responses): 100%
-- Latency avg/p95/p99: 4.74 / 9.59 / 16.32 ms
-- Status counts: `{"200": 753757}`
-- Top errors: none
+- Latency avg/p95/p99: 10.72 / 11.76 / 27.84 ms
 
-## Conclusion
+## Advisory Sources
 
-Failover behavior is stable under sustained load: with Gemini disabled, the API served all requests successfully and routed advisory generation through NVIDIA NIM without response failures.
+- Deterministic advisory fallback: 5573
+- No external AI provider key was active in this run.
+
+## Error Hotspots
+
+- None

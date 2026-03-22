@@ -1,5 +1,6 @@
 export type RiskLevel = "Low" | "Moderate" | "High" | "Severe";
 export type DataSourceState = "live" | "fallback" | "unavailable";
+export type HazardKey = "flood" | "wildfire" | "heat" | "severeWeather";
 
 export interface DataSourceStatus {
   name: string;
@@ -20,6 +21,8 @@ export interface GeocodedLocation {
   city?: string;
   county?: string;
   state?: string;
+  countyFips?: string;
+  tractFips?: string;
   postalCode?: string;
   resolvedAddress: string;
 }
@@ -27,7 +30,14 @@ export interface GeocodedLocation {
 export interface RiskBreakdown {
   flood: number;
   wildfire: number;
+  heat: number;
   severeWeather: number;
+}
+
+export interface ActiveAlert {
+  event: string;
+  severity: string;
+  headline: string;
 }
 
 export interface RiskResponse {
@@ -38,9 +48,11 @@ export interface RiskResponse {
   riskLevel: RiskLevel;
   confidence: "Low" | "Medium" | "High";
   breakdown: RiskBreakdown;
+  topHazard: HazardKey;
   keyDrivers: string[];
   advisory: string;
   actions: string[];
+  activeAlerts: ActiveAlert[];
   assistancePrograms: AssistanceProgram[];
   dataSources: DataSourceStatus[];
   generatedAt: string;

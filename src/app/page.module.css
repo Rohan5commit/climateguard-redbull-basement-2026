@@ -251,6 +251,14 @@
   color: #dbebff;
 }
 
+.topHazard {
+  margin-top: 0.55rem;
+  color: #a7ffd9;
+  font-size: 0.84rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
 .metricList {
   margin-top: 0.8rem;
   list-style: none;
@@ -320,6 +328,40 @@
   gap: 0.45rem;
   color: #dcecff;
   line-height: 1.45;
+}
+
+.alertList {
+  list-style: none;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.alertList li {
+  border: 1px solid rgba(161, 184, 217, 0.26);
+  border-radius: 14px;
+  padding: 0.7rem;
+  background: rgba(8, 15, 28, 0.68);
+  display: grid;
+  gap: 0.22rem;
+}
+
+.alertList strong {
+  color: #fff0b7;
+}
+
+.alertList span {
+  color: #a7ffd9;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+}
+
+.alertList p {
+  color: #dcecff;
+  line-height: 1.45;
+}
+
+.alertFallback {
+  color: rgba(220, 236, 255, 0.82);
 }
 
 .programList {

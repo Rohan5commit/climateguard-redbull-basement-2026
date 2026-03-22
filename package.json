@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "reviewer:check": "node scripts/reviewer-smoke-check.mjs",
+    "screenshots": "node scripts/capture-demo-screenshots.mjs",
     "validate:addresses": "node scripts/run-validation.mjs",
     "stress": "node scripts/stress-test.mjs",
     "stress:failover": "node scripts/failover-stress-test.mjs"
@@ -23,6 +25,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "playwright": "^1.58.2",
     "typescript": "^5"
   }
 }
